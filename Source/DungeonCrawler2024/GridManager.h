@@ -6,6 +6,30 @@
 #include "GameFramework/Actor.h"
 #include "GridManager.generated.h"
 
+
+// This represents each type of grid tile that can be spawned
+UENUM()
+enum class ETileTypes
+{
+	floor,
+	wall
+};
+
+
+// Each tile has a type and should hold a reference to all actors occupying it
+USTRUCT()
+struct FGridTileStruct
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	ETileTypes TileType;
+
+	UPROPERTY(VisibleAnywhere)
+	TSet<AActor*> ActorsOccupying;
+};
+
+
 UCLASS()
 class DUNGEONCRAWLER2024_API AGridManager : public AActor
 {
@@ -15,17 +39,29 @@ public:
 	// Sets default values for this actor's properties
 	AGridManager();
 
-	UPROPERTY(EditAnywhere)
+	// The number of tiles for the grid's x and y dimensions
+	UPROPERTY(EditInstanceOnly)
 	int GridWidth;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditInstanceOnly)
 	int GridHeight;
+	// The width and height of any given tile
+	UPROPERTY(EditAnywhere)
+	float GridTileSize = 100;
+
+	// An array to hold tile data
+	UPROPERTY(EditAnywhere)
+	TArray<FGridTileStruct> Grid;
+	// A map for which static mesh to use for each tile type
+	UPROPERTY(EditDefaultsOnly)
+	TMap<ETileTypes, UStaticMesh*> TileMeshes;
+
+	// Returns the tile struct at a given x and y coordinate
+	UFUNCTION()
+	FGridTileStruct GetTile(int X, int Y) const;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
+	// Called when the actor is placed or spawned
+	virtual void OnConstruction(const FTransform& Transform);
 };
