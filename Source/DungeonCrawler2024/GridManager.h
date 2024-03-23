@@ -57,11 +57,12 @@ public:
 
 	// Returns the tile struct at a given x and y coordinate
 	UFUNCTION()
-	FGridTileStruct GetTile(int X, int Y) const;
+	FGridTileStruct GetTile(int X, int Y);
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	// Called when the actor is placed or spawned
 	virtual void OnConstruction(const FTransform& Transform);
+	virtual void PostActorCreated();
 };

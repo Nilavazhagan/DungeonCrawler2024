@@ -5,6 +5,7 @@
 #include "Components/InstancedStaticMeshComponent.h"
 
 TMap<ETileTypes, UInstancedStaticMeshComponent*> ISMMap;
+TArray<ETileTypes> TileKeyArray;
 
 // Sets default values and other construction things
 AGridManager::AGridManager()
@@ -14,7 +15,7 @@ AGridManager::AGridManager()
 	// Initializing Grid Sizes
 	GridWidth = 5;
 	GridHeight = 5;
-
+	GridTileSize = 100;
 
 	
 }
@@ -24,32 +25,75 @@ void AGridManager::OnConstruction(const FTransform &Transform)
 {
 	Super::OnConstruction(Transform);
 
-	// Sizing the grid array to hold all tiles
-	Grid.SetNum(GridWidth * GridHeight);
-
-
-	
-	// TODO: Initializing the Instanced Static Meshes for each TileMesh in the blueprint
-	for (int i = 0; i < TileMeshes.Num(); ++i)
+	// Clear all instances on all Instanced Static Mesh Components
+	for (int i = 0; i < TileKeyArray.Num(); ++i)
 	{
-		// TODO: Get Key for current entry
-		ETileTypes key = ;
-		UInstancedStaticMeshComponent* ISM = NewObject<UInstancedStaticMeshComponent>();
+		ETileTypes Key = TileKeyArray[i];
+		if (ISMMap.Contains(Key))
+		{
+			ISMMap[Key]->ClearInstances();
+		}
+	}
+
+	// Add instances based on the tile type of each grid square
+	Grid.SetNum(GridWidth * GridHeight);
+	for (int YTile = 0; YTile < GridHeight; ++YTile)
+	{
+		for (int XTile = 0; XTile < GridWidth; ++XTile)
+		{
+			FGridTileStruct Tile = GetTile(XTile, YTile);
+			if (TileKeyArray.Contains(Tile.TileType) == false)
+			{
+				Tile.TileType = ETileTypes::floor;
+			}
+
+			double TileXPosition = XTile * GridTileSize;
+			double TileYPosition = YTile * GridTileSize;
+			FVector TilePosition = FVector(TileXPosition, TileYPosition, 0.0);
+			// Adding an instance mesh of the tiles type
+			ISMMap[Tile.TileType]->AddInstance(FTransform(TilePosition));
+		}
+	}
+}
+
+
+void AGridManager::PostActorCreated()
+{
+	Super::PostActorCreated();
+
+	// Initializing the Instanced Static Meshes for each TileMesh entry in the blueprint
+	TileMeshes.GenerateKeyArray(TileKeyArray);
+	ISMMap.Empty();
+	for (int i = 0; i < TileKeyArray.Num(); ++i)
+	{
+		// Get Key for current entry
+		ETileTypes Key = TileKeyArray[i];
+		UInstancedStaticMeshComponent* ISM = NewObject<UInstancedStaticMeshComponent>(this);
+		ISM->SetupAttachment(GetRootComponent());
 		ISM->RegisterComponent();
 		// Insert static mesh from relevent TileMeshes map entry
-		ISM->SetStaticMesh(TileMeshes[key]);
-		ISMMap[key] = ISM;
+		ISM->ClearInstances();
+		ISM->SetStaticMesh(TileMeshes[Key]);
+		ISMMap.Add(Key, ISM);
+		this->AddInstanceComponent(ISM);
 	}
 
 	// Generating the grid of tiles.
-	for (int XTile = 0; XTile < GridWidth; ++XTile)
+	Grid.Empty();
+	for (int YTile = 0; YTile < GridHeight; ++YTile)
 	{
-		for (int YTile = 0; YTile < GridHeight; ++YTile)
+		for (int XTile = 0; XTile < GridWidth; ++XTile)
 		{
-			// Get the tile reference then set it's type
-			FGridTileStruct Tile = GetTile(XTile, YTile);
+			// Get the tile reference then initialize it's type
+			FGridTileStruct Tile = FGridTileStruct{};
 			Tile.TileType = ETileTypes::floor;
-			//TODO: Add instances to the relevent mesh.
+			Grid.Add(Tile);
+			// Calculate the position of the new tile
+			double TileXPosition = XTile * GridTileSize;
+			double TileYPosition = YTile * GridTileSize;
+			FVector TilePosition = FVector(TileXPosition, TileYPosition, 0.0);
+			//Add instances to the relevent ISM component.
+			ISMMap[Tile.TileType]->AddInstance(FTransform(TilePosition));
 		}
 	}
 }
@@ -58,15 +102,13 @@ void AGridManager::OnConstruction(const FTransform &Transform)
 void AGridManager::BeginPlay()
 {
 	Super::BeginPlay();
-	ISM = NewObject<UStaticMeshComponent>(this);
 }
 
 
 // Returns the tile struct from the grid for a given x and y coordinate
-FGridTileStruct AGridManager::GetTile(int X, int Y) const
+FGridTileStruct AGridManager::GetTile(int X, int Y)
 {
 	checkf(X < GridWidth, TEXT("Get Tile had been passed an X value greater than grid width."));
 	checkf(Y < GridHeight, TEXT("Get Tile had been passed a Y value greater than grid height."));
-
 	return Grid[X + (Y * GridWidth)];
 }
