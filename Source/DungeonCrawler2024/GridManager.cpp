@@ -2,6 +2,9 @@
 
 
 #include "GridManager.h"
+
+#include <ThirdParty/ShaderConductor/ShaderConductor/External/SPIRV-Headers/include/spirv/unified1/spirv.h>
+
 #include "Components/InstancedStaticMeshComponent.h"
 
 // Sets default values and other construction things
@@ -10,8 +13,8 @@ AGridManager::AGridManager()
 	PrimaryActorTick.bCanEverTick = false;
 
 	// Initializing Grid Sizes
-	GridWidth = 3;
-	GridHeight = 3;
+	GridWidth = 100;
+	GridHeight = 100;
 	GridTileSize = 100;
 
 	// Filled manually so it can be read even before TileMeshes Key values can be accessed
@@ -54,6 +57,8 @@ void AGridManager::OnConstruction(const FTransform &Transform)
 			double TileXPosition = XTile * GridTileSize + this->GetActorLocation().X;
 			double TileYPosition = YTile * GridTileSize + this->GetActorLocation().Y;
 			FVector TilePosition = FVector(TileXPosition, TileYPosition, 0.0);
+
+			Tile.Position = TilePosition;
 
 			if (ISMMap.Contains(Tile.TileType))
 			{
@@ -115,17 +120,77 @@ void AGridManager::CreateGrid()
 			// Get the tile reference then initialize it's type
 			FGridTileStruct Tile = FGridTileStruct{};
 			Tile.TileType = ETileTypes::floor;
+			Tile.ActorsOccupying = TSet<AActor*>();
 			Grid.Add(Tile);
+
 			// Calculate the position of the tile
 			double TileXPosition = XTile * GridTileSize + this->GetActorLocation().X;
 			double TileYPosition = YTile * GridTileSize + this->GetActorLocation().Y;
 			FVector TilePosition = FVector(TileXPosition, TileYPosition, 0.0);
+			Tile.Position = TilePosition;
 			
 			// If there is an ISM for this tile type, create the instance
 			if (ISMMap.Contains(Tile.TileType))
 			{
 				ISMMap[Tile.TileType]->AddInstance(FTransform(TilePosition));
 			}
+		}
+	}
+}
+
+bool AGridManager::MoveActor(AActor* Actor, FVector Direction)
+{
+	FGridTileStruct CurrentTile;
+	for (int i = 0; i < Grid.Num(); i++ )
+	{
+		FGridTileStruct TileStruct = Grid[i];
+		if (TileStruct.ActorsOccupying.Contains(Actor))
+		{
+			CurrentTile = TileStruct;
+			break;
+		}
+	}
+
+	FGridTileStruct NewTile;
+	if (GetAdjacentTile(CurrentTile, Direction, NewTile))
+	{
+		NewTile.ActorsOccupying.Add(Actor);
+		CurrentTile.ActorsOccupying.Remove(Actor);
+
+		const FVector NewPosition = FVector(NewTile.Position.X, NewTile.Position.Y, Actor->GetActorLocation().Z);
+		Actor->SetActorLocation(NewPosition);
+	}
+
+
+	return true;
+}
+
+bool AGridManager::GetAdjacentTile(FGridTileStruct& SourceTile, FVector Direction, FGridTileStruct& AdjacentTile)
+{
+	const FVector CurrentPosition = SourceTile.Position;
+	const FVector NewPosition = CurrentPosition + (Direction.Normalize() * GridTileSize);
+
+	for(int i = 0; i < Grid.Num(); i++)
+		if (Grid[i].Position == NewPosition)
+		{
+			AdjacentTile = Grid[i];
+			return true;
+		}
+	
+	return false;
+}
+
+void AGridManager::RegisterActor(AActor* Actor)
+{
+	FVector DesiredTilePosition = Actor->GetActorLocation();
+	DesiredTilePosition.Z = 0;
+	
+	for (int i = 0; i < Grid.Num(); i++)
+	{
+		if (Grid[i].Position == DesiredTilePosition)
+		{
+			Grid[i].ActorsOccupying.Add(Actor);
+			break;
 		}
 	}
 }

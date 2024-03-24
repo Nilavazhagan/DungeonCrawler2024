@@ -24,6 +24,9 @@ struct FGridTileStruct
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere)
+	FVector Position;
+	
+	UPROPERTY(EditAnywhere)
 	ETileTypes TileType;
 
 	UPROPERTY(VisibleAnywhere)
@@ -64,6 +67,12 @@ public:
 	FGridTileStruct& GetTile(FGridTileStruct& Tile, int X, int Y);
 	UFUNCTION()
 	void CreateGrid();
+	UFUNCTION()
+	bool MoveActor(AActor* Actor, FVector Direction);
+	UFUNCTION()
+	bool GetAdjacentTile(FGridTileStruct& SourceTile, FVector Direction, FGridTileStruct& AdjacentTile);
+	UFUNCTION()
+	void RegisterActor(AActor* Actor);
 
 
 protected:
