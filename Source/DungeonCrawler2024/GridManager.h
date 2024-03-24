@@ -23,13 +23,13 @@ struct FGridTileStruct
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY()
 	FVector Position;
 	
-	UPROPERTY(EditAnywhere)
+	UPROPERTY()
 	ETileTypes TileType;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	TSet<AActor*> ActorsOccupying;
 };
 
@@ -53,7 +53,7 @@ public:
 	float GridTileSize = 100;
 
 	// An array to hold tile data
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(VisibleAnywhere)
 	TArray<FGridTileStruct> Grid;
 	// A map for which static mesh to use for each tile type
 	UPROPERTY(EditDefaultsOnly)
@@ -65,12 +65,19 @@ public:
 	// Returns the tile struct at a given x and y coordinate
 	UFUNCTION()
 	FGridTileStruct& GetTile(FGridTileStruct& Tile, int X, int Y);
+
+	UFUNCTION()
+	FGridTileStruct& GetClosestTile(FGridTileStruct& Tile, FVector Location);
+
 	UFUNCTION()
 	void CreateGrid();
+
 	UFUNCTION()
 	bool MoveActor(AActor* Actor, FVector Direction);
+
 	UFUNCTION()
 	bool GetAdjacentTile(FGridTileStruct& SourceTile, FVector Direction, FGridTileStruct& AdjacentTile);
+
 	UFUNCTION()
 	void RegisterActor(AActor* Actor);
 

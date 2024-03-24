@@ -2,9 +2,6 @@
 
 
 #include "GridManager.h"
-
-#include <ThirdParty/ShaderConductor/ShaderConductor/External/SPIRV-Headers/include/spirv/unified1/spirv.h>
-
 #include "Components/InstancedStaticMeshComponent.h"
 
 // Sets default values and other construction things
@@ -95,6 +92,20 @@ FGridTileStruct& AGridManager::GetTile(FGridTileStruct& Tile, int X, int Y)
 	return Tile;
 }
 
+// Returns a reference to the tile that is closest to the given world space location
+FGridTileStruct& AGridManager::GetClosestTile(FGridTileStruct& Tile, FVector Location)
+{
+	// Use world position to calculate closest grid coordinate, and if the coordinate is off the grid,
+	// clamp it to the valid coord.
+	int XGridCoord = FMath::RoundHalfToZero(Location.X / GridTileSize);
+	XGridCoord = FMath::Clamp(XGridCoord, 0, GridWidth);
+	int YGridCoord = FMath::RoundHalfToZero(Location.Y / GridTileSize);
+	YGridCoord = FMath::Clamp(YGridCoord, 0, GridHeight);
+
+	GetTile(Tile, XGridCoord, YGridCoord);
+	return Tile;
+}
+
 void AGridManager::CreateGrid()
 {
 	// Initializing the Instanced Static Meshes for each TileMesh entry in the blueprint
@@ -180,17 +191,15 @@ bool AGridManager::GetAdjacentTile(FGridTileStruct& SourceTile, FVector Directio
 	return false;
 }
 
+
+
+// Registers an actor to their closest tile
 void AGridManager::RegisterActor(AActor* Actor)
 {
 	FVector DesiredTilePosition = Actor->GetActorLocation();
-	DesiredTilePosition.Z = 0;
+	DesiredTilePosition.Z = GetActorLocation().Z;
 	
-	for (int i = 0; i < Grid.Num(); i++)
-	{
-		if (Grid[i].Position == DesiredTilePosition)
-		{
-			Grid[i].ActorsOccupying.Add(Actor);
-			break;
-		}
-	}
+	FGridTileStruct Tile{};
+	Tile = GetClosestTile(Tile, DesiredTilePosition);
+	Tile.ActorsOccupying.Add(Actor);
 }
