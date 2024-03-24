@@ -11,6 +11,7 @@
 UENUM()
 enum class ETileTypes
 {
+	empty,
 	floor,
 	wall
 };
@@ -55,14 +56,25 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	TMap<ETileTypes, UStaticMesh*> TileMeshes;
 
+
+
+
 	// Returns the tile struct at a given x and y coordinate
 	UFUNCTION()
-	FGridTileStruct GetTile(int X, int Y);
+	FGridTileStruct& GetTile(FGridTileStruct& Tile, int X, int Y);
+	UFUNCTION()
+	void CreateGrid();
+
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	// Called when the actor is placed or spawned
-	virtual void OnConstruction(const FTransform& Transform);
+	// Called when the actor is spawned into the world
 	virtual void PostActorCreated();
+	// Called when the actor is placed or spawned
+	virtual void OnConstruction(const FTransform& Transform) override;
+
+private:
+	TMap<ETileTypes, UInstancedStaticMeshComponent*> ISMMap;
+	TArray<ETileTypes> TileKeyArray;
 };
