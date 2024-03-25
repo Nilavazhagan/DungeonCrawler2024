@@ -77,9 +77,9 @@ void AGridManager::OnConstruction(const FTransform &Transform)
 			int StartY = FMath::Min(SelectionTile1[1], SelectionTile2[1]);
 			int EndY = FMath::Max(SelectionTile1[1], SelectionTile2[1]);
 
-			for (int X = StartX; X < EndX; ++X)
+			for (int X = StartX; X <= EndX; ++X)
 			{
-				for (int Y = StartY; Y < EndY; ++Y)
+				for (int Y = StartY; Y <= EndY; ++Y)
 				{
 					SetTileType(AppliedTileType, X, Y);
 				}
