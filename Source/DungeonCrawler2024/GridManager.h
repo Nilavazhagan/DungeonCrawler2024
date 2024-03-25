@@ -25,7 +25,7 @@ struct FGridTileStruct
 
 	UPROPERTY()
 	FVector Position;
-	
+
 	UPROPERTY(EditInstanceOnly, SimpleDisplay)
 	ETileTypes TileType;
 
@@ -39,7 +39,7 @@ class DUNGEONCRAWLER2024_API AGridManager : public AActor
 {
 	GENERATED_BODY()
 
-public:	
+public:
 	// Sets default values for this actor's properties
 	AGridManager();
 
@@ -53,22 +53,22 @@ public:
 	float GridTileSize = 100;
 
 	// Grid Editing Interface Stuff
-	UPROPERTY(EditInstanceOnly, EditFixedSize, Category="GridEditing")
-	TArray<int> SelectionTile1{0, 0};
-	UPROPERTY(EditInstanceOnly, Category="GridEditing")
+	UPROPERTY(EditInstanceOnly, EditFixedSize, Category = "GridEditing")
+	TArray<int> SelectionTile1{ 0, 0 };
+	UPROPERTY(EditInstanceOnly, Category = "GridEditing")
 	bool bMultiSelect{ false };
-	UPROPERTY(EditInstanceOnly, EditFixedSize, Category="GridEditing")
+	UPROPERTY(EditInstanceOnly, EditFixedSize, Category = "GridEditing")
 	TArray<int> SelectionTile2{ 0, 0 };
 	UPROPERTY(EditInstanceOnly, Category = "GridEditing", meta = (DisplayName = "Tile Type"))
-	ETileTypes AppliedTileType{ETileTypes::empty};
+	ETileTypes AppliedTileType{ ETileTypes::empty };
 	// bApply is a bool checkbox that can work like a simple button
-	UPROPERTY(EditInstanceOnly, Category="GridEditing")
+	UPROPERTY(EditInstanceOnly, Category = "GridEditing")
 	bool bApply{ false };
 
 	// Using an image to generate grid
-	UPROPERTY(EditAnywhere, Category="GridEditing")
+	UPROPERTY(EditAnywhere, Category = "GridEditing")
 	bool bIsGeneratedFromImage = false;
-	UPROPERTY(EditAnywhere, Category="GridEditing")
+	UPROPERTY(EditAnywhere, Category = "GridEditing")
 	UTexture2D* GenerationImage;
 
 
@@ -76,16 +76,13 @@ public:
 	UPROPERTY()
 	TArray<FGridTileStruct> Grid;
 
-
-
-
 	// Returns the tile struct at a given x and y coordinate
 	UFUNCTION()
 	FGridTileStruct& GetTile(FGridTileStruct& Tile, int X, int Y);
-
+	// Returns the closest grid tile to a given world location
 	UFUNCTION()
 	FGridTileStruct& GetClosestTile(FGridTileStruct& Tile, FVector Location);
-
+	// Creates a fresh grid with all tiles set to the default type
 	UFUNCTION()
 	void CreateGrid();
 
@@ -100,7 +97,7 @@ public:
 
 	UFUNCTION()
 	void SetTileType(ETileTypes Type, int X, int Y);
-
+	// Generates a grid, using pixels from a texture to determine tile types
 	UFUNCTION()
 	void GenerateFromImage();
 

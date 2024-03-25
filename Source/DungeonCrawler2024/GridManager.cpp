@@ -49,7 +49,7 @@ AGridManager::AGridManager()
 
 }
 
-// Called when the object is placed in the editor or spawned. 
+// Called when the object is placed in the editor, spawned, or a property gets changed. 
 void AGridManager::OnConstruction(const FTransform &Transform)
 {
 	Super::OnConstruction(Transform);
@@ -130,7 +130,7 @@ void AGridManager::OnConstruction(const FTransform &Transform)
 	}
 }
 
-
+// Called when the actor is spawned into the world
 void AGridManager::PostActorCreated()
 {
 	Super::PostActorCreated();
@@ -202,6 +202,7 @@ void AGridManager::CreateGrid()
 // Read the Manager's GenerationImage texture image to create tiles and assign types
 void AGridManager::GenerateFromImage()
 {
+	// Getting the image data and locking it to avoid corruption during generation
 	FTexture2DMipMap MippityMappity = GenerationImage->GetPlatformData()->Mips[0];
 	const FColor* Pixels = static_cast<const FColor*>(MippityMappity.BulkData.LockReadOnly());
 
@@ -231,7 +232,7 @@ void AGridManager::GenerateFromImage()
 		}
 	}
 
-
+	// Now we're done, so it is safe to unlock
 	MippityMappity.BulkData.Unlock();
 }
 
