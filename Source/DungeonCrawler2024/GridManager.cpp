@@ -59,6 +59,40 @@ void AGridManager::OnConstruction(const FTransform &Transform)
 		}
 	}
 
+	// If user is applying changes to the grid, update selected tiles' data
+	if (bApply) {
+		// This will make the checkbox work as a simple button
+		bApply = false;
+		// Clamp input ranges to grid size
+		SelectionTile1[0] = FMath::Clamp(SelectionTile1[0], 0, GridWidth - 1);
+		SelectionTile1[1] = FMath::Clamp(SelectionTile1[1], 0, GridHeight - 1);
+		SelectionTile2[0] = FMath::Clamp(SelectionTile2[0], 0, GridWidth - 1);
+		SelectionTile2[1] = FMath::Clamp(SelectionTile2[1], 0, GridHeight - 1);
+
+		// Update a range of tiles
+		if (bMultiSelect)
+		{
+			int StartX = FMath::Min(SelectionTile1[0], SelectionTile2[0]);
+			int EndX = FMath::Max(SelectionTile1[0], SelectionTile2[0]);
+			int StartY = FMath::Min(SelectionTile1[1], SelectionTile2[1]);
+			int EndY = FMath::Max(SelectionTile1[1], SelectionTile2[1]);
+
+			for (int X = StartX; X < EndX; ++X)
+			{
+				for (int Y = StartY; Y < EndY; ++Y)
+				{
+					SetTileType(AppliedTileType, X, Y);
+				}
+			}
+		}
+		// Update a single tile
+		else
+		{
+			SetTileType(AppliedTileType, SelectionTile1[0], SelectionTile1[1]);
+		}
+	}
+
+
 	// Add instances based on the tile type of each grid square
 	Grid.SetNum(GridWidth * GridHeight);
 	for (int YTile = 0; YTile < GridHeight; ++YTile)
@@ -203,4 +237,12 @@ void AGridManager::RegisterActor(AActor* Actor)
 	FGridTileStruct Tile{};
 	Tile = GetClosestTile(Tile, DesiredTilePosition);
 	Tile.ActorsOccupying.Add(Actor);
+}
+
+// Set Tile Type
+void AGridManager::SetTileType(ETileTypes Type, int X, int Y)
+{
+	checkf(X < GridWidth, TEXT("Set Tile Type had been passed an X value greater than grid width."));
+	checkf(Y < GridHeight, TEXT("Set Tile Type had been passed a Y value greater than grid height."));
+	Grid[X + (Y * GridWidth)].TileType = Type;
 }

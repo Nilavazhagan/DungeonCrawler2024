@@ -26,7 +26,7 @@ struct FGridTileStruct
 	UPROPERTY()
 	FVector Position;
 	
-	UPROPERTY()
+	UPROPERTY(EditInstanceOnly, SimpleDisplay)
 	ETileTypes TileType;
 
 	UPROPERTY()
@@ -51,6 +51,19 @@ public:
 	// The width and height of any given tile
 	UPROPERTY(EditAnywhere)
 	float GridTileSize = 100;
+
+	// Grid Editing Interface Stuff
+	UPROPERTY(EditInstanceOnly, EditFixedSize, Category = "GridEditing")
+	TArray<int> SelectionTile1{0, 0};
+	UPROPERTY(EditInstanceOnly, Category="GridEditing")
+	bool bMultiSelect{ false };
+	UPROPERTY(EditInstanceOnly, EditFixedSize, Category="GridEditing")
+	TArray<int> SelectionTile2{ 0, 0 };
+	UPROPERTY(EditInstanceOnly, Category = "GridEditing", meta = (DisplayName = "Tile Type"))
+	ETileTypes AppliedTileType{ETileTypes::empty};
+	// bApply is a bool checkbox that can work like a simple button
+	UPROPERTY(EditInstanceOnly, Category="GridEditing")
+	bool bApply{ false };
 
 	// An array to hold tile data
 	UPROPERTY()
@@ -78,6 +91,9 @@ public:
 	UFUNCTION()
 	void RegisterActor(AActor* Actor);
 
+	UFUNCTION()
+	void SetTileType(ETileTypes Type, int X, int Y);
+
 
 protected:
 	// Called when the game starts or when spawned
@@ -86,7 +102,6 @@ protected:
 	virtual void PostActorCreated();
 	// Called when the actor is placed or spawned
 	virtual void OnConstruction(const FTransform& Transform) override;
-
 private:
 	TMap<ETileTypes, UInstancedStaticMeshComponent*> ISMMap;
 	TArray<ETileTypes> TileKeyArray;
