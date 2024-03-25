@@ -4,6 +4,7 @@
 #include "GridManager.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Components/SceneComponent.h"
+#include "ImageCore.h"
 
 // Sets default values and other construction things
 AGridManager::AGridManager()
@@ -26,6 +27,10 @@ AGridManager::AGridManager()
 		ETileTypes::floor,
 		ETileTypes::wall
 	};
+
+	// Setting which tile types are mapped to which color
+	ColorToTileMap.Add(FColor::White, ETileTypes::floor);
+	ColorToTileMap.Add(FColor::Black, ETileTypes::wall);
 
 	// Initializing the Instanced Static Meshes for each TileMesh entry in the blueprint
 	for (int i = 0; i < TileKeyArray.Num(); ++i)
@@ -129,7 +134,15 @@ void AGridManager::OnConstruction(const FTransform &Transform)
 void AGridManager::PostActorCreated()
 {
 	Super::PostActorCreated();
-	CreateGrid();
+	if (bIsGeneratedFromImage)
+	{
+		checkf(GenerationImage != NULL, TEXT("Generate from image was active with no generation image assigned!"));
+		GenerateFromImage();
+	}
+	else
+	{
+		CreateGrid();
+	}
 }
 
 // Called when the game starts or when spawned
@@ -184,6 +197,42 @@ void AGridManager::CreateGrid()
 			Tile.Position = TilePosition;
 		}
 	}
+}
+
+// Read the Manager's GenerationImage texture image to create tiles and assign types
+void AGridManager::GenerateFromImage()
+{
+	FTexture2DMipMap MippityMappity = GenerationImage->GetPlatformData()->Mips[0];
+	const FColor* Pixels = static_cast<const FColor*>(MippityMappity.BulkData.LockReadOnly());
+
+	GridWidth = MippityMappity.SizeX;
+	GridHeight = MippityMappity.SizeY;
+
+	// Generating the grid of tiles.
+	Grid.Empty();
+	for (int YTile = 0; YTile < GridHeight; ++YTile)
+	{
+		for (int XTile = 0; XTile < GridWidth; ++XTile)
+		{
+			// Get the pixel data
+			FColor CurrentPixel = Pixels[XTile + (YTile * GridWidth)];
+
+			// Get the tile reference then initialize it's type
+			FGridTileStruct Tile = FGridTileStruct{};
+			Tile.TileType = ColorToTileMap[CurrentPixel];
+			Tile.ActorsOccupying = TSet<AActor*>();
+			Grid.Add(Tile);
+
+			// Calculate the position of the tile
+			double TileXPosition = XTile * GridTileSize + this->GetActorLocation().X;
+			double TileYPosition = YTile * GridTileSize + this->GetActorLocation().Y;
+			FVector TilePosition = FVector(TileXPosition, TileYPosition, 0.0);
+			Tile.Position = TilePosition;
+		}
+	}
+
+
+	MippityMappity.BulkData.Unlock();
 }
 
 bool AGridManager::MoveActor(AActor* Actor, FVector Direction)
