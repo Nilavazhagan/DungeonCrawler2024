@@ -4,7 +4,6 @@
 #include "GridManager.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Components/SceneComponent.h"
-#include "ImageCore.h"
 
 // Sets default values and other construction things
 AGridManager::AGridManager()
