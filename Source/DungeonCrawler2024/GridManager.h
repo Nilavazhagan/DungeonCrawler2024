@@ -38,7 +38,7 @@ UCLASS()
 class DUNGEONCRAWLER2024_API AGridManager : public AActor
 {
 	GENERATED_BODY()
-	
+
 public:	
 	// Sets default values for this actor's properties
 	AGridManager();
@@ -53,11 +53,8 @@ public:
 	float GridTileSize = 100;
 
 	// An array to hold tile data
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	TArray<FGridTileStruct> Grid;
-	// A map for which static mesh to use for each tile type
-	UPROPERTY(EditDefaultsOnly)
-	TMap<ETileTypes, UStaticMesh*> TileMeshes;
 
 
 

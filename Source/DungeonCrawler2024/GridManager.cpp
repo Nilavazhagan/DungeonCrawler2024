@@ -3,23 +3,45 @@
 
 #include "GridManager.h"
 #include "Components/InstancedStaticMeshComponent.h"
+#include "Components/SceneComponent.h"
 
 // Sets default values and other construction things
 AGridManager::AGridManager()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
+	// Setting up the root scene component
+	USceneComponent* RootSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
+	RootComponent = RootSceneComponent;
+
+
 	// Initializing Grid Sizes
 	GridWidth = 100;
 	GridHeight = 100;
 	GridTileSize = 100;
 
-	// Filled manually so it can be read even before TileMeshes Key values can be accessed
+	// Filled manually so it can be read even before Key values can be accessed
 	// (Important for loading from disk)
 	TileKeyArray = {
 		ETileTypes::floor,
 		ETileTypes::wall
 	};
+
+	// Initializing the Instanced Static Meshes for each TileMesh entry in the blueprint
+	for (int i = 0; i < TileKeyArray.Num(); ++i)
+	{
+		ETileTypes Key = TileKeyArray[i];
+		// Creating the InstancedStaticMesh component as a subobject under the manager's root component
+		FString NewComponentName = FString::Printf(TEXT("InstancedStaticMeshComponent %i"), i);
+		UInstancedStaticMeshComponent* ISM = CreateDefaultSubobject<UInstancedStaticMeshComponent>(FName(NewComponentName));
+		ISM->RegisterComponent();
+		ISM->SetupAttachment(RootComponent);
+		ISM->InstancingRandomSeed = 69;
+		this->AddInstanceComponent(ISM);
+		// Adding the ISM to a map for easy access when needed
+		ISMMap.Add(Key, ISM);
+	}
+
 }
 
 // Called when the object is placed in the editor or spawned. 
@@ -51,8 +73,8 @@ void AGridManager::OnConstruction(const FTransform &Transform)
 				Tile.TileType = TileKeyArray[0];
 			}
 
-			double TileXPosition = XTile * GridTileSize + this->GetActorLocation().X;
-			double TileYPosition = YTile * GridTileSize + this->GetActorLocation().Y;
+			double TileXPosition = XTile * GridTileSize;
+			double TileYPosition = YTile * GridTileSize;
 			FVector TilePosition = FVector(TileXPosition, TileYPosition, 0.0);
 
 			Tile.Position = TilePosition;
@@ -106,22 +128,9 @@ FGridTileStruct& AGridManager::GetClosestTile(FGridTileStruct& Tile, FVector Loc
 	return Tile;
 }
 
+// Generate the grid structs and fill relevant data
 void AGridManager::CreateGrid()
 {
-	// Initializing the Instanced Static Meshes for each TileMesh entry in the blueprint
-	for (int i = 0; i < TileKeyArray.Num(); ++i)
-	{
-		// Get Key for current entry
-		ETileTypes Key = TileKeyArray[i];
-		UInstancedStaticMeshComponent* ISM = NewObject<UInstancedStaticMeshComponent>(this);
-		ISM->RegisterComponent();
-		// Insert static mesh from relevent TileMeshes map entry
-		ISM->SetStaticMesh(TileMeshes[Key]);
-		// Add it to the manager and store a reference
-		this->AddInstanceComponent(ISM);
-		ISMMap.Add(Key, ISM);
-	}
-
 	// Generating the grid of tiles.
 	Grid.Empty();
 	for (int YTile = 0; YTile < GridHeight; ++YTile)
@@ -130,7 +139,7 @@ void AGridManager::CreateGrid()
 		{
 			// Get the tile reference then initialize it's type
 			FGridTileStruct Tile = FGridTileStruct{};
-			Tile.TileType = ETileTypes::floor;
+			Tile.TileType = TileKeyArray[0];
 			Tile.ActorsOccupying = TSet<AActor*>();
 			Grid.Add(Tile);
 
@@ -139,12 +148,6 @@ void AGridManager::CreateGrid()
 			double TileYPosition = YTile * GridTileSize + this->GetActorLocation().Y;
 			FVector TilePosition = FVector(TileXPosition, TileYPosition, 0.0);
 			Tile.Position = TilePosition;
-			
-			// If there is an ISM for this tile type, create the instance
-			if (ISMMap.Contains(Tile.TileType))
-			{
-				ISMMap[Tile.TileType]->AddInstance(FTransform(TilePosition));
-			}
 		}
 	}
 }
@@ -190,8 +193,6 @@ bool AGridManager::GetAdjacentTile(FGridTileStruct& SourceTile, FVector Directio
 	
 	return false;
 }
-
-
 
 // Registers an actor to their closest tile
 void AGridManager::RegisterActor(AActor* Actor)
