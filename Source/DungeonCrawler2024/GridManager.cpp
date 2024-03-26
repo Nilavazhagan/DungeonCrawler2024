@@ -19,6 +19,7 @@ AGridManager::AGridManager()
 	GridWidth = 100;
 	GridHeight = 100;
 	GridTileSize = 100;
+	TileCenterOffset = FVector2D(0,0);
 
 	// Filled manually so it can be read even before Key values can be accessed
 	// (Important for loading from disk)
@@ -103,18 +104,18 @@ void AGridManager::OnConstruction(const FTransform &Transform)
 	{
 		for (int XTile = 0; XTile < GridWidth; ++XTile)
 		{
-			FGridTileStruct Tile{};
-			GetTile(Tile, XTile, YTile);
+			FGridTileStruct& Tile = GetTile(XTile, YTile);
 
 			if (!TileKeyArray.Contains(Tile.TileType))
 			{
 				Tile.TileType = TileKeyArray[0];
 			}
 
+			// Setting the Tile's position
 			double TileXPosition = XTile * GridTileSize;
 			double TileYPosition = YTile * GridTileSize;
 			FVector TilePosition = FVector(TileXPosition, TileYPosition, 0.0);
-
+			UE_LOG(LogTemp, Display, TEXT("Setting tile (%i, %i)'s position to (%f, %f, %f)"), XTile, YTile, TilePosition.X, TilePosition.Y, TilePosition.Z);
 			Tile.Position = TilePosition;
 
 			if (ISMMap.Contains(Tile.TileType))
@@ -151,17 +152,16 @@ void AGridManager::BeginPlay()
 }
 
 
-// Returns a reference to the tile struct from the grid for a given x and y coordinate
-FGridTileStruct& AGridManager::GetTile(FGridTileStruct& Tile, int X, int Y)
+// Returns a copy of the tile struct from the grid for a given x and y coordinate
+FGridTileStruct& AGridManager::GetTile(int X, int Y)
 {
 	checkf(X < GridWidth, TEXT("Get Tile had been passed an X value greater than grid width."));
 	checkf(Y < GridHeight, TEXT("Get Tile had been passed a Y value greater than grid height."));
-	Tile = Grid[X + (Y * GridWidth)];
-	return Tile;
+	return Grid[X + (Y * GridWidth)];
 }
 
-// Returns a reference to the tile that is closest to the given world space location
-FGridTileStruct& AGridManager::GetClosestTile(FGridTileStruct& Tile, FVector Location)
+// Returns a copy to the tile that is closest to the given world space location
+FGridTileStruct& AGridManager::GetClosestTile(FVector Location)
 {
 	// Use world position to calculate closest grid coordinate, and if the coordinate is off the grid,
 	// clamp it to the valid coord.
@@ -170,8 +170,7 @@ FGridTileStruct& AGridManager::GetClosestTile(FGridTileStruct& Tile, FVector Loc
 	int YGridCoord = FMath::RoundHalfToZero(Location.Y / GridTileSize);
 	YGridCoord = FMath::Clamp(YGridCoord, 0, GridHeight);
 
-	GetTile(Tile, XGridCoord, YGridCoord);
-	return Tile;
+	return GetTile(XGridCoord, YGridCoord);
 }
 
 // Generate the grid structs and fill relevant data
@@ -184,16 +183,17 @@ void AGridManager::CreateGrid()
 		for (int XTile = 0; XTile < GridWidth; ++XTile)
 		{
 			// Get the tile reference then initialize it's type
-			FGridTileStruct Tile = FGridTileStruct{};
+			FGridTileStruct Tile{};
 			Tile.TileType = TileKeyArray[0];
 			Tile.ActorsOccupying = TSet<AActor*>();
-			Grid.Add(Tile);
 
 			// Calculate the position of the tile
-			double TileXPosition = XTile * GridTileSize + this->GetActorLocation().X;
-			double TileYPosition = YTile * GridTileSize + this->GetActorLocation().Y;
+			double TileXPosition = XTile * GridTileSize;
+			double TileYPosition = YTile * GridTileSize;
 			FVector TilePosition = FVector(TileXPosition, TileYPosition, 0.0);
 			Tile.Position = TilePosition;
+
+			Grid.Add(Tile);
 		}
 	}
 }
@@ -218,16 +218,17 @@ void AGridManager::GenerateFromImage()
 			FColor CurrentPixel = Pixels[XTile + (YTile * GridWidth)];
 
 			// Get the tile reference then initialize it's type
-			FGridTileStruct Tile = FGridTileStruct{};
+			FGridTileStruct Tile{};
 			Tile.TileType = ColorToTileMap[CurrentPixel];
 			Tile.ActorsOccupying = TSet<AActor*>();
-			Grid.Add(Tile);
 
 			// Calculate the position of the tile
-			double TileXPosition = XTile * GridTileSize + this->GetActorLocation().X;
-			double TileYPosition = YTile * GridTileSize + this->GetActorLocation().Y;
+			double TileXPosition = XTile * GridTileSize;
+			double TileYPosition = YTile * GridTileSize;
 			FVector TilePosition = FVector(TileXPosition, TileYPosition, 0.0);
 			Tile.Position = TilePosition;
+
+			Grid.Add(Tile);
 		}
 	}
 
@@ -241,11 +242,9 @@ bool AGridManager::MoveActor(AActor* Actor, FVector Direction)
 	FVector OldLocation = Actor->GetActorLocation();
 	FVector NewLocation = OldLocation + (Direction * GridTileSize);
 
-	FGridTileStruct OldTile {};
-	GetClosestTile(OldTile, OldLocation);
+	FGridTileStruct OldTile = GetClosestTile(OldLocation);
 
-	FGridTileStruct NewTile {};
-	GetClosestTile(NewTile, NewLocation);
+	FGridTileStruct NewTile = GetClosestTile(NewLocation);
 
 	Actor->SetActorLocation(FVector(NewLocation.X, NewLocation.Y, OldLocation.Z));
 
@@ -257,6 +256,7 @@ bool AGridManager::GetAdjacentTile(FGridTileStruct& SourceTile, FVector Directio
 	const FVector CurrentPosition = SourceTile.Position;
 	const FVector NewPosition = CurrentPosition + (Direction.Normalize() * GridTileSize);
 
+	// TODO: optimize this lookup
 	for(int i = 0; i < Grid.Num(); i++)
 		if (Grid[i].Position == NewPosition)
 		{
@@ -271,20 +271,17 @@ bool AGridManager::GetAdjacentTile(FGridTileStruct& SourceTile, FVector Directio
 void AGridManager::RegisterActor(AActor* Actor)
 {
 	FVector DesiredTilePosition = Actor->GetActorLocation();
-	DesiredTilePosition.Z = GetActorLocation().Z;
-	
-	FGridTileStruct Tile{};
-	Tile = GetClosestTile(Tile, DesiredTilePosition);
+
+	FGridTileStruct& Tile = GetClosestTile(DesiredTilePosition);
+
 	Tile.ActorsOccupying.Add(Actor);
 
 	const FVector CurrentLocation = Actor->GetActorLocation();
 
-	// Assuming tile pivot is not in center, adjust player position to be in center of tile
-	const float HalfWidth = GridWidth / 2;
-	const float HalfHeight = GridHeight / 2;
+	// Adjust player position to be in center of tile
 	Actor->SetActorLocation(
-		FVector(Tile.Position.X + HalfWidth,
-				Tile.Position.Y + HalfHeight,
+		FVector(Tile.Position.X + TileCenterOffset.X,
+				Tile.Position.Y + TileCenterOffset.Y,
 				CurrentLocation.Z));
 }
 

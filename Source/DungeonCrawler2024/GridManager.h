@@ -51,6 +51,9 @@ public:
 	// The width and height of any given tile
 	UPROPERTY(EditAnywhere)
 	float GridTileSize = 100;
+	UPROPERTY(EditAnywhere)
+	FVector2D TileCenterOffset;
+
 
 
 	// Using an image to generate grid
@@ -78,12 +81,13 @@ public:
 	UPROPERTY()
 	TArray<FGridTileStruct> Grid;
 
-	// Returns the tile struct at a given x and y coordinate
+	// Returns reference of the tile struct at a given x and y coordinate
 	UFUNCTION()
-	FGridTileStruct& GetTile(FGridTileStruct& Tile, int X, int Y);
-	// Returns the closest grid tile to a given world location
+	FGridTileStruct& GetTile(int X, int Y);
+
+	// Returns reference of the closest grid tile to a given world location
 	UFUNCTION()
-	FGridTileStruct& GetClosestTile(FGridTileStruct& Tile, FVector Location);
+	FGridTileStruct& GetClosestTile(FVector Location);
 	// Creates a fresh grid with all tiles set to the default type
 	UFUNCTION()
 	void CreateGrid();
@@ -97,8 +101,10 @@ public:
 	UFUNCTION()
 	void RegisterActor(AActor* Actor);
 
+	// Set a Tile's type in the grid
 	UFUNCTION()
 	void SetTileType(ETileTypes Type, int X, int Y);
+
 	// Generates a grid, using pixels from a texture to determine tile types
 	UFUNCTION()
 	void GenerateFromImage();
