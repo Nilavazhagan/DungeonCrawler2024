@@ -237,27 +237,17 @@ void AGridManager::GenerateFromImage()
 
 bool AGridManager::MoveActor(AActor* Actor, FVector Direction)
 {
-	FGridTileStruct CurrentTile;
-	for (int i = 0; i < Grid.Num(); i++ )
-	{
-		FGridTileStruct TileStruct = Grid[i];
-		if (TileStruct.ActorsOccupying.Contains(Actor))
-		{
-			CurrentTile = TileStruct;
-			break;
-		}
-	}
+	Direction.Normalize();
+	FVector OldLocation = Actor->GetActorLocation();
+	FVector NewLocation = OldLocation + (Direction * GridTileSize);
 
-	FGridTileStruct NewTile;
-	if (GetAdjacentTile(CurrentTile, Direction, NewTile))
-	{
-		NewTile.ActorsOccupying.Add(Actor);
-		CurrentTile.ActorsOccupying.Remove(Actor);
+	FGridTileStruct OldTile {};
+	GetClosestTile(OldTile, OldLocation);
 
-		const FVector NewPosition = FVector(NewTile.Position.X, NewTile.Position.Y, Actor->GetActorLocation().Z);
-		Actor->SetActorLocation(NewPosition);
-	}
+	FGridTileStruct NewTile {};
+	GetClosestTile(NewTile, NewLocation);
 
+	Actor->SetActorLocation(FVector(NewLocation.X, NewLocation.Y, OldLocation.Z));
 
 	return true;
 }
@@ -286,6 +276,16 @@ void AGridManager::RegisterActor(AActor* Actor)
 	FGridTileStruct Tile{};
 	Tile = GetClosestTile(Tile, DesiredTilePosition);
 	Tile.ActorsOccupying.Add(Actor);
+
+	const FVector CurrentLocation = Actor->GetActorLocation();
+
+	// Assuming tile pivot is not in center, adjust player position to be in center of tile
+	const float HalfWidth = GridWidth / 2;
+	const float HalfHeight = GridHeight / 2;
+	Actor->SetActorLocation(
+		FVector(Tile.Position.X + HalfWidth,
+				Tile.Position.Y + HalfHeight,
+				CurrentLocation.Z));
 }
 
 // Set Tile Type

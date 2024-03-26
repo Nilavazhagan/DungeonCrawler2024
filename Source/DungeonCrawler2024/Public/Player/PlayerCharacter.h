@@ -22,7 +22,13 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	void MoveAction(const FInputActionValue& Value);
+	void MoveForward();
+
+	void MoveBackward();
+
+	void MoveLeft();
+
+	void MoveRight();
 
 	void TurnRight();
 
@@ -39,7 +45,16 @@ public:
 	UInputMappingContext* InputMappingContext;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Input")
-	UInputAction* MoveInput;
+	UInputAction* MoveForwardInput;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Input")
+	UInputAction* MoveBackwardInput;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Input")
+	UInputAction* MoveLeftInput;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Input")
+	UInputAction* MoveRightInput;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Input")
 	UInputAction* TurnLeftInput;

@@ -4,6 +4,7 @@
 #include "DungeonCrawler2024/Public/Player/PlayerCharacter.h"
 
 #include "EnhancedInputComponent.h"
+#include "DungeonCrawler2024/DungeonCrawler2024GameMode.h"
 #include "DungeonCrawler2024/GridManager.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -19,10 +20,11 @@ APlayerCharacter::APlayerCharacter()
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	TArray<AActor*> gridManagers = TArray<AActor*>(); 
-	UGameplayStatics::GetAllActorsOfClass(this->GetWorld(), TSubclassOf<AGridManager>(), gridManagers);
 
-	GridManager = Cast<AGridManager, AActor>(gridManagers[0]);
+	const ADungeonCrawler2024GameMode* GameMode = Cast<ADungeonCrawler2024GameMode, AGameModeBase>(
+		UGameplayStatics::GetGameMode(this->GetWorld()));
+	GridManager = GameMode->GridManager;
+	GridManager->RegisterActor(this);
 }
 
 // Called every frame
@@ -38,35 +40,32 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 	UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent);
 
-	EnhancedInputComponent->BindAction(MoveInput, ETriggerEvent::Triggered, this, &APlayerCharacter::MoveAction);
+	EnhancedInputComponent->BindAction(MoveForwardInput, ETriggerEvent::Triggered, this, &APlayerCharacter::MoveForward);
+	EnhancedInputComponent->BindAction(MoveBackwardInput, ETriggerEvent::Triggered, this, &APlayerCharacter::MoveBackward);
+	EnhancedInputComponent->BindAction(MoveLeftInput, ETriggerEvent::Triggered, this, &APlayerCharacter::MoveLeft);
+	EnhancedInputComponent->BindAction(MoveRightInput, ETriggerEvent::Triggered, this, &APlayerCharacter::MoveRight);
 	EnhancedInputComponent->BindAction(TurnLeftInput, ETriggerEvent::Triggered, this, &APlayerCharacter::TurnLeft);
 	EnhancedInputComponent->BindAction(TurnRightInput, ETriggerEvent::Triggered, this, &APlayerCharacter::TurnRight);
 }
 
-void APlayerCharacter::MoveAction(const FInputActionValue& Value)
+void APlayerCharacter::MoveForward()
 {
-	const FVector2d moveDirection = Value.Get<FVector2d>();
+	GridManager->MoveActor(this, GetActorForwardVector());
+}
 
-	if (moveDirection.X > 0.05)
-	{
-		// Forward
-		GridManager->MoveActor(this, GetActorForwardVector());
-	}
-	else if (moveDirection. X < -0.05)
-	{
-		// Backward
-		GridManager->MoveActor(this, -1 * GetActorForwardVector());
-	}
-	else if (moveDirection.Y < -0.05)
-	{
-		// Left
-		GridManager->MoveActor(this, -1 * GetActorRightVector());
-	}
-	else if (moveDirection.Y > 0.05)
-	{
-		// Right
-		GridManager->MoveActor(this, GetActorRightVector());
-	}
+void APlayerCharacter::MoveBackward()
+{
+	GridManager->MoveActor(this, -1 * GetActorForwardVector());
+}
+
+void APlayerCharacter::MoveLeft()
+{
+	GridManager->MoveActor(this, -1 * GetActorRightVector());
+}
+
+void APlayerCharacter::MoveRight()
+{
+	GridManager->MoveActor(this, GetActorRightVector());
 }
 
 void APlayerCharacter::TurnRight()
