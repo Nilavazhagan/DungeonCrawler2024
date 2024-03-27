@@ -20,7 +20,7 @@ public:
 	bool bDoesBlockTile;
 
 protected:
-
+	virtual void BeginPlay() override;
 
 public:	
 

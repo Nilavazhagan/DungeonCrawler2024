@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "TileBlockingComponent.h"
 #include "GameFramework/Actor.h"
 #include "GridManager.generated.h"
 
@@ -30,7 +31,7 @@ struct FGridTileStruct
 	ETileTypes TileType;
 
 	UPROPERTY()
-	TSet<AActor*> ActorsOccupying;
+	TSet<UTileBlockingComponent*> ObjectsOccupying;
 };
 
 
@@ -99,7 +100,7 @@ public:
 	bool GetAdjacentTile(FGridTileStruct& SourceTile, FVector Direction, FGridTileStruct& AdjacentTile);
 
 	UFUNCTION(BlueprintCallable)
-	void RegisterActor(AActor* Actor);
+	void RegisterObject(UTileBlockingComponent* Object);
 
 	// Set a Tile's type in the grid
 	UFUNCTION()

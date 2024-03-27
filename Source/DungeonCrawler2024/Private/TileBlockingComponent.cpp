@@ -3,6 +3,9 @@
 
 #include "TileBlockingComponent.h"
 
+#include "DungeonCrawler2024/DungeonCrawler2024GameMode.h"
+#include "Kismet/GameplayStatics.h"
+
 // Sets default values for this component's properties
 UTileBlockingComponent::UTileBlockingComponent()
 {
@@ -11,5 +14,14 @@ UTileBlockingComponent::UTileBlockingComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 
 	bDoesBlockTile = true;
+}
+
+void UTileBlockingComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	const ADungeonCrawler2024GameMode* GameMode = Cast<ADungeonCrawler2024GameMode, AGameModeBase>(
+		UGameplayStatics::GetGameMode(this->GetWorld()));
+	GameMode->GridManager->RegisterObject(this);
 }
 

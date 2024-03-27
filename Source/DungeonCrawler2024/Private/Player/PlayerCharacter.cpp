@@ -29,7 +29,6 @@ void APlayerCharacter::BeginPlay()
 	const ADungeonCrawler2024GameMode* GameMode = Cast<ADungeonCrawler2024GameMode, AGameModeBase>(
 		UGameplayStatics::GetGameMode(this->GetWorld()));
 	GridManager = GameMode->GridManager;
-	GridManager->RegisterActor(this);
 }
 
 // Called every frame
@@ -102,8 +101,9 @@ void APlayerCharacter::Interact()
 	UE_LOG(LogTemp, Display, TEXT("Interact: checking actors on tile location (%f, %f, %f)!"), Tile.Position.X, Tile.Position.Y, Tile.Position.Z);
 
 	// Checking each actor
-	for (AActor* OccupyingActor : Tile.ActorsOccupying)
+	for (UTileBlockingComponent* OccupyingObject : Tile.ObjectsOccupying)
 	{
+		AActor* OccupyingActor = OccupyingObject->GetOwner();
 		UE_LOG(LogTemp, Display, TEXT("Attempting to interact."));
 		IInteract::Execute_OnInteract(OccupyingActor, this);
 	}
@@ -122,7 +122,7 @@ void APlayerCharacter::Attack()
 
 	// Identify a valid target actor
 	AActor* Target{};
-	for (AActor* OccupyingActor : Tile.ActorsOccupying)
+	for (UTileBlockingComponent* OccupyingObject : Tile.ObjectsOccupying)
 	{
 
 	}

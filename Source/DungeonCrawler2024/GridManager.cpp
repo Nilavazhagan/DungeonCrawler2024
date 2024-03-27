@@ -186,7 +186,7 @@ void AGridManager::CreateGrid()
 			// Get the tile reference then initialize it's type
 			FGridTileStruct Tile{};
 			Tile.TileType = TileKeyArray[0];
-			Tile.ActorsOccupying = TSet<AActor*>();
+			Tile.ObjectsOccupying = TSet<UTileBlockingComponent*>();
 
 			// Calculate the position of the tile
 			double TileXPosition = XTile * GridTileSize;
@@ -221,7 +221,7 @@ void AGridManager::GenerateFromImage()
 			// Get the tile reference then initialize it's type
 			FGridTileStruct Tile{};
 			Tile.TileType = ColorToTileMap[CurrentPixel];
-			Tile.ActorsOccupying = TSet<AActor*>();
+			Tile.ObjectsOccupying = TSet<UTileBlockingComponent*>();
 
 			// Calculate the position of the tile
 			double TileXPosition = XTile * GridTileSize;
@@ -262,10 +262,9 @@ bool AGridManager::MoveActor(AActor* Actor, FVector Direction)
 	}
 
 	// Check if the NewTile has any actors that block movement
-	for (AActor* OccupyingActor : NewTile.ActorsOccupying)
+	for (UTileBlockingComponent* OccupyingObject : NewTile.ObjectsOccupying)
 	{
-		UTileBlockingComponent* TileBlocker = OccupyingActor->GetComponentByClass<UTileBlockingComponent>();
-		if (TileBlocker && TileBlocker->bDoesBlockTile)
+		if (OccupyingObject->bDoesBlockTile)
 		{
 			return false;
 		}
@@ -273,9 +272,10 @@ bool AGridManager::MoveActor(AActor* Actor, FVector Direction)
 
 	Actor->SetActorLocation(FVector(NewLocation.X, NewLocation.Y, OldLocation.Z));
 
-	// Re-register actor at the new tile.
-	OldTile.ActorsOccupying.Remove(Actor);
-	NewTile.ActorsOccupying.Add(Actor);
+	// Re-register object at the new tile.
+	UTileBlockingComponent* TileBlocker = Actor->GetComponentByClass<UTileBlockingComponent>();
+	OldTile.ObjectsOccupying.Remove(TileBlocker);
+	NewTile.ObjectsOccupying.Add(TileBlocker);
 
 	return true;
 }
@@ -296,16 +296,13 @@ bool AGridManager::GetAdjacentTile(FGridTileStruct& SourceTile, FVector Directio
 	return false;
 }
 
-// Registers an actor to their closest tile
-void AGridManager::RegisterActor(AActor* Actor)
+void AGridManager::RegisterObject(UTileBlockingComponent* Object)
 {
-	FVector DesiredTilePosition = Actor->GetActorLocation();
-
-	FGridTileStruct& Tile = GetClosestTile(DesiredTilePosition);
-
-	Tile.ActorsOccupying.Add(Actor);
-
+	AActor* Actor = Object->GetOwner();
 	const FVector CurrentLocation = Actor->GetActorLocation();
+	FGridTileStruct& Tile = GetClosestTile(CurrentLocation);
+
+	Tile.ObjectsOccupying.Add(Object);
 
 	// Adjust player position to be in center of tile
 	Actor->SetActorLocation(
