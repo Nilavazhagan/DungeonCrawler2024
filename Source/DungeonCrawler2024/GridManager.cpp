@@ -248,6 +248,11 @@ bool AGridManager::MoveActor(AActor* Actor, FVector Direction)
 	FGridTileStruct OldTile = GetClosestTile(OldLocation);
 	FGridTileStruct NewTile = GetClosestTile(NewLocation);
 
+	if (NewTile.TileType == ETileTypes::wall)
+	{
+		return false;
+	}
+
 	// Check if the NewTile has any actors that block movement
 	for (AActor* OccupyingActor : NewTile.ActorsOccupying)
 	{
