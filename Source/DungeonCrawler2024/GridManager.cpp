@@ -243,34 +243,37 @@ void AGridManager::RegenerateFromImage()
 	OnConstruction(this->GetActorTransform());
 }
 
+FGridTileStruct AGridManager::GetAdjacentTileInDirection(FVector Location, FVector Direction)
+{
+	Direction.Normalize();
+	FVector NewLocation = Location + (Direction * GridTileSize);
+	FGridTileStruct NewTile = GetClosestTile(NewLocation);
+	return NewTile;
+}
+
 // The grid manager moves and re-registers actor from its current tile to an adjacent one based on direction.
 // Checks for movement blocking
 bool AGridManager::MoveActor(AActor* Actor, FVector Direction)
 {
-	FVector OldLocation = Actor->GetActorLocation();
+	const FVector OldLocation = Actor->GetActorLocation();
 	FGridTileStruct OldTile = GetClosestTile(OldLocation);
 
-	// Based on the player's current direction, get the adjacent tile they are facing
-	Direction.Normalize();
-	FVector NewLocation = OldLocation + (Direction * GridTileSize);
-	FGridTileStruct NewTile = GetClosestTile(NewLocation);
+	FGridTileStruct NewTile = GetAdjacentTileInDirection(OldLocation, Direction);
 
 	// Block movement into walls
 	if (NewTile.TileType == ETileTypes::wall)
-	{
 		return false;
-	}
 
 	// Check if the NewTile has any actors that block movement
 	for (UTileBlockingComponent* OccupyingObject : NewTile.ObjectsOccupying)
-	{
 		if (OccupyingObject->bDoesBlockTile)
-		{
 			return false;
-		}
-	}
 
-	Actor->SetActorLocation(FVector(NewLocation.X, NewLocation.Y, OldLocation.Z));
+	// Adjust player position to be in center of tile
+	Actor->SetActorLocation(
+		FVector(NewTile.Position.X + TileCenterOffset.X,
+				NewTile.Position.Y + TileCenterOffset.Y,
+				OldLocation.Z));
 
 	// Re-register object at the new tile.
 	UTileBlockingComponent* TileBlocker = Actor->GetComponentByClass<UTileBlockingComponent>();
@@ -278,22 +281,6 @@ bool AGridManager::MoveActor(AActor* Actor, FVector Direction)
 	NewTile.ObjectsOccupying.Add(TileBlocker);
 
 	return true;
-}
-
-bool AGridManager::GetAdjacentTile(FGridTileStruct& SourceTile, FVector Direction, FGridTileStruct& AdjacentTile)
-{
-	const FVector CurrentPosition = SourceTile.Position;
-	const FVector NewPosition = CurrentPosition + (Direction.Normalize() * GridTileSize);
-
-	// TODO: optimize this lookup
-	for(int i = 0; i < Grid.Num(); i++)
-		if (Grid[i].Position == NewPosition)
-		{
-			AdjacentTile = Grid[i];
-			return true;
-		}
-	
-	return false;
 }
 
 void AGridManager::RegisterObject(UTileBlockingComponent* Object)

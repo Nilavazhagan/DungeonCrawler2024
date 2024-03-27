@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "DamageComponent.h"
 #include "InputAction.h"
 #include "DungeonCrawler2024/DungeonCrawler2024Character.h"
 #include "DungeonCrawler2024/GridManager.h"
@@ -17,9 +18,6 @@ class DUNGEONCRAWLER2024_API APlayerCharacter : public ACharacter
 public:
 	// Sets default values for this character's properties
 	APlayerCharacter();
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UChildActorComponent* EquippedWeapon;
 
 protected:
 	// Called when the game starts or when spawned
@@ -75,7 +73,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
 	UInputAction* AttackInput;
 
+	void Equip(UDamageComponent* Weapon);
 
+	int GetDamage();
 
 private:
 
@@ -83,4 +83,10 @@ private:
 
 	// Gets the tile directly in front of the player
 	bool GetForwardTile(FGridTileStruct& Tile);
+
+	UPROPERTY()
+	UDamageComponent* Melee;
+
+	UPROPERTY()
+	UDamageComponent* EquippedWeapon;
 };

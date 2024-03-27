@@ -96,9 +96,6 @@ public:
 	UFUNCTION()
 	bool MoveActor(AActor* Actor, FVector Direction);
 
-	UFUNCTION()
-	bool GetAdjacentTile(FGridTileStruct& SourceTile, FVector Direction, FGridTileStruct& AdjacentTile);
-
 	UFUNCTION(BlueprintCallable)
 	void RegisterObject(UTileBlockingComponent* Object);
 
@@ -114,11 +111,14 @@ public:
 	UFUNCTION(CallInEditor, Category = "GridManager|GridEditing")
 	void RegenerateFromImage();
 
+	UFUNCTION()
+	FGridTileStruct GetAdjacentTileInDirection(FVector Location, FVector Direction);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	// Called when the actor is spawned into the world
-	virtual void PostActorCreated();
+	virtual void PostActorCreated() override;
 	// Called when the actor is placed or spawned
 	virtual void OnConstruction(const FTransform& Transform) override;
 

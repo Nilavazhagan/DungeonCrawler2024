@@ -9,6 +9,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Interact.h"
 #include "Attack.h"
+#include "HealthComponent.h"
 
 
 // Sets default values
@@ -16,9 +17,6 @@ APlayerCharacter::APlayerCharacter()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
-	EquippedWeapon = CreateDefaultSubobject<UChildActorComponent>(TEXT("EquippedWeapon"));
-	EquippedWeapon->SetupAttachment(this->GetRootComponent());
 }
 
 // Called when the game starts or when spawned
@@ -29,6 +27,9 @@ void APlayerCharacter::BeginPlay()
 	const ADungeonCrawler2024GameMode* GameMode = Cast<ADungeonCrawler2024GameMode, AGameModeBase>(
 		UGameplayStatics::GetGameMode(this->GetWorld()));
 	GridManager = GameMode->GridManager;
+
+	Melee = Cast<UDamageComponent>(GetComponentByClass(UDamageComponent::StaticClass()));
+	check (Melee != nullptr);
 }
 
 // Called every frame
@@ -124,9 +125,29 @@ void APlayerCharacter::Attack()
 	AActor* Target{};
 	for (UTileBlockingComponent* OccupyingObject : Tile.ObjectsOccupying)
 	{
+		AActor* OccupyingActor = OccupyingObject->GetOwner();
+		UHealthComponent* TargetHealthComponent = Cast<UHealthComponent>(
+			OccupyingActor->GetComponentByClass(UHealthComponent::StaticClass()));
 
+		if (TargetHealthComponent != nullptr)
+		{
+			TargetHealthComponent->ReceiveDamage(GetDamage());
+			break;
+		}
 	}
-	IAttack::Execute_OnAttack(EquippedWeapon, this, Target);
+}
+
+void APlayerCharacter::Equip(UDamageComponent* Weapon)
+{
+	EquippedWeapon = Weapon;
+	// TODO: Handle attaching weapon to hand
+}
+
+int APlayerCharacter::GetDamage()
+{
+	if (EquippedWeapon != nullptr)
+		return EquippedWeapon->damage;
+	return Melee->damage;
 }
 
 // Returns a reference to the tile directly in front of the player, returns false if forward tile doesn't exist
