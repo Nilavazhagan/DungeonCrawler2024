@@ -109,6 +109,10 @@ public:
 	UFUNCTION()
 	void GenerateFromImage();
 
+	// Regenerates the grid from the current assigned texture
+	UFUNCTION(CallInEditor, Category = "GridManager|GridEditing")
+	void RegenerateFromImage();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

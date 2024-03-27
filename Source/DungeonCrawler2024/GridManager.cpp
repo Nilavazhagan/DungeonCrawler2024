@@ -237,17 +237,25 @@ void AGridManager::GenerateFromImage()
 	MippityMappity.BulkData.Unlock();
 }
 
+void AGridManager::RegenerateFromImage()
+{
+	GenerateFromImage();
+	OnConstruction(this->GetActorTransform());
+}
+
 // The grid manager moves and re-registers actor from its current tile to an adjacent one based on direction.
 // Checks for movement blocking
 bool AGridManager::MoveActor(AActor* Actor, FVector Direction)
 {
-	Direction.Normalize();
 	FVector OldLocation = Actor->GetActorLocation();
-	FVector NewLocation = OldLocation + (Direction * GridTileSize);
-
 	FGridTileStruct OldTile = GetClosestTile(OldLocation);
+
+	// Based on the player's current direction, get the adjacent tile they are facing
+	Direction.Normalize();
+	FVector NewLocation = OldLocation + (Direction * GridTileSize);
 	FGridTileStruct NewTile = GetClosestTile(NewLocation);
 
+	// Block movement into walls
 	if (NewTile.TileType == ETileTypes::wall)
 	{
 		return false;
