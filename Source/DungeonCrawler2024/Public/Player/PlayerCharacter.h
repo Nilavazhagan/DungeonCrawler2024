@@ -34,6 +34,8 @@ protected:
 
 	void TurnLeft();
 
+	void Interact();
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -61,6 +63,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Input")
 	UInputAction* TurnRightInput;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	UInputAction* InteractInput;
 
 private:
 

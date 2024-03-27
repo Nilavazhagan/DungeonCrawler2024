@@ -7,6 +7,7 @@
 #include "DungeonCrawler2024/DungeonCrawler2024GameMode.h"
 #include "DungeonCrawler2024/GridManager.h"
 #include "Kismet/GameplayStatics.h"
+#include "Interact.h"
 
 
 // Sets default values
@@ -40,12 +41,14 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 	UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent);
 
+	// Binding Inputs
 	EnhancedInputComponent->BindAction(MoveForwardInput, ETriggerEvent::Triggered, this, &APlayerCharacter::MoveForward);
 	EnhancedInputComponent->BindAction(MoveBackwardInput, ETriggerEvent::Triggered, this, &APlayerCharacter::MoveBackward);
 	EnhancedInputComponent->BindAction(MoveLeftInput, ETriggerEvent::Triggered, this, &APlayerCharacter::MoveLeft);
 	EnhancedInputComponent->BindAction(MoveRightInput, ETriggerEvent::Triggered, this, &APlayerCharacter::MoveRight);
 	EnhancedInputComponent->BindAction(TurnLeftInput, ETriggerEvent::Triggered, this, &APlayerCharacter::TurnLeft);
 	EnhancedInputComponent->BindAction(TurnRightInput, ETriggerEvent::Triggered, this, &APlayerCharacter::TurnRight);
+	EnhancedInputComponent->BindAction(InteractInput, ETriggerEvent::Triggered, this, &APlayerCharacter::Interact);
 }
 
 void APlayerCharacter::MoveForward()
@@ -78,4 +81,22 @@ void APlayerCharacter::TurnLeft()
 	AddActorLocalRotation(FRotator(0, -90, 0));
 }
 
+// Upon pressing the interact key, triggers the interact interface on any actors
+// occupying the tile directly in front.
+void APlayerCharacter::Interact()
+{
+	UE_LOG(LogTemp, Display, TEXT("Interact input received!"));
+
+	// Getting the tile data to check
+	const FVector CheckLocation = FVector(GetActorLocation() + (this->GetActorForwardVector() * GridManager->GridTileSize));
+	const FGridTileStruct Tile = GridManager->GetClosestTile(CheckLocation);
+	UE_LOG(LogTemp, Display, TEXT("Interact: checking actors on tile location (%f, %f, %f)!"), Tile.Position.X, Tile.Position.Y, Tile.Position.Z);
+
+	// Checking each actor
+	for (AActor* OccupyingActor : Tile.ActorsOccupying)
+	{
+		UE_LOG(LogTemp, Display, TEXT("Checking if an actor has the interaction interface."));
+		IInteract::Execute_OnInteract(OccupyingActor, this);
+	}
+}
 
