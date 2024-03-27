@@ -19,6 +19,7 @@ APlayerCharacter::APlayerCharacter()
 
 	EquippedWeapon = CreateDefaultSubobject<UChildActorComponent>(TEXT("EquippedWeapon"));
 	EquippedWeapon->SetupAttachment(this->GetRootComponent());
+	EquippedWeapon->SetChildActorClass(AActor::StaticClass());
 }
 
 // Called when the game starts or when spawned
@@ -105,12 +106,17 @@ void APlayerCharacter::Interact()
 	for (AActor* OccupyingActor : Tile.ActorsOccupying)
 	{
 		UE_LOG(LogTemp, Display, TEXT("Attempting to interact."));
-		IInteract::Execute_OnInteract(OccupyingActor, this);
+		if (OccupyingActor->Implements<UInteract>())
+		{
+			IInteract::Execute_OnInteract(OccupyingActor, this);
+		}
 	}
 }
 
 void APlayerCharacter::Attack()
 {
+	UE_LOG(LogTemp, Display, TEXT("Player character is attacking!"))
+
 	// Get the tile to attack
 	FGridTileStruct Tile;
 
@@ -126,7 +132,17 @@ void APlayerCharacter::Attack()
 	{
 
 	}
-	IAttack::Execute_OnAttack(EquippedWeapon, this, Target);
+
+	// Access the weapon and perform its attack if it has one
+	if (EquippedWeapon->GetChildActor()->Implements<UAttack>())
+	{
+		UE_LOG(LogTemp, Display, TEXT("Equipped Weapon implements the attack interface."))
+		IAttack::Execute_OnAttack(EquippedWeapon->GetChildActor(), this, Target);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Equipped Weapon DOES NOT implement the attack interface!"))
+	}
 }
 
 // Returns a reference to the tile directly in front of the player, returns false if forward tile doesn't exist

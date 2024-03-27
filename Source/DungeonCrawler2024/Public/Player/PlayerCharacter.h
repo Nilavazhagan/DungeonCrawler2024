@@ -18,7 +18,10 @@ public:
 	// Sets default values for this character's properties
 	APlayerCharacter();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	// Due to what seems to be a bug with Unreal. To access the defaults for this property, drag it
+	// into the blueprint event graph like a variable, and it is editable there, even if not attached
+	// to anything.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
 	UChildActorComponent* EquippedWeapon;
 
 protected:
