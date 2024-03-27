@@ -21,7 +21,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int InitialHealth = 100;
+	int InitialHealth = Max_Health;
 
 	UPROPERTY(VisibleInstanceOnly)
 	int CurrentHealth;
@@ -41,4 +41,7 @@ private:
 	
 	UFUNCTION()
 	void Die();
+
+	const int Min_Health = 0;
+	const int Max_Health = 100;
 };
