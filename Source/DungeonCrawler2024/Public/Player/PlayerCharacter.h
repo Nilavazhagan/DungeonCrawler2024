@@ -23,7 +23,7 @@ public:
 	// into the blueprint event graph like a variable, and it is editable there, even if not attached
 	// to anything.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
-	UChildActorComponent* EquippedWeapon;
+	UChildActorComponent* EquippedWeaponHolder;
 
 protected:
 	// Called when the game starts or when spawned

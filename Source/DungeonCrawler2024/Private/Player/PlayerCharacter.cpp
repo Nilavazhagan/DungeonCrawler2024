@@ -18,9 +18,8 @@ APlayerCharacter::APlayerCharacter()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	EquippedWeapon = CreateDefaultSubobject<UChildActorComponent>(TEXT("EquippedWeapon"));
-	EquippedWeapon->SetupAttachment(this->GetRootComponent());
-	EquippedWeapon->SetChildActorClass(AActor::StaticClass());
+	EquippedWeaponHolder = CreateDefaultSubobject<UChildActorComponent>(TEXT("EquippedWeaponHolder"));
+	EquippedWeaponHolder->SetupAttachment(this->GetRootComponent());
 }
 
 // Called when the game starts or when spawned
@@ -116,6 +115,12 @@ void APlayerCharacter::Interact()
 
 void APlayerCharacter::Attack()
 {
+	if (!EquippedWeaponHolder->GetChildActor())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Player character is trying to attack with no weapon!"))
+		return;
+	}
+
 	UE_LOG(LogTemp, Display, TEXT("Player character is attacking!"))
 
 	// Get the tile to attack
@@ -135,10 +140,10 @@ void APlayerCharacter::Attack()
 	}
 
 	// Access the weapon and perform its attack if it has one
-	if (EquippedWeapon->GetChildActor()->Implements<UAttack>())
+	if (EquippedWeaponHolder->GetChildActor()->Implements<UAttack>())
 	{
 		UE_LOG(LogTemp, Display, TEXT("Equipped Weapon implements the attack interface."))
-		IAttack::Execute_OnAttack(EquippedWeapon->GetChildActor(), this, Target);
+		IAttack::Execute_OnAttack(EquippedWeaponHolder->GetChildActor(), this, Target);
 	}
 	else
 	{
