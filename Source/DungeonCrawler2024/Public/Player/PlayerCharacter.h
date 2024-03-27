@@ -18,6 +18,9 @@ public:
 	// Sets default values for this character's properties
 	APlayerCharacter();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UChildActorComponent* EquippedWeapon;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -35,6 +38,8 @@ protected:
 	void TurnLeft();
 
 	void Interact();
+
+	void Attack();
 
 public:
 	// Called every frame
@@ -67,7 +72,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
 	UInputAction* InteractInput;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	UInputAction* AttackInput;
+
+
+
 private:
 
 	AGridManager* GridManager;
+
+	// Gets the tile directly in front of the player
+	bool GetForwardTile(FGridTileStruct& Tile);
 };

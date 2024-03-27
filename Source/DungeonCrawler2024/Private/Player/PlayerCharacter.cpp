@@ -8,6 +8,7 @@
 #include "DungeonCrawler2024/GridManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "Interact.h"
+#include "Attack.h"
 
 
 // Sets default values
@@ -15,6 +16,9 @@ APlayerCharacter::APlayerCharacter()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	EquippedWeapon = CreateDefaultSubobject<UChildActorComponent>(TEXT("EquippedWeapon"));
+	EquippedWeapon->SetupAttachment(this->GetRootComponent());
 }
 
 // Called when the game starts or when spawned
@@ -49,6 +53,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	EnhancedInputComponent->BindAction(TurnLeftInput, ETriggerEvent::Triggered, this, &APlayerCharacter::TurnLeft);
 	EnhancedInputComponent->BindAction(TurnRightInput, ETriggerEvent::Triggered, this, &APlayerCharacter::TurnRight);
 	EnhancedInputComponent->BindAction(InteractInput, ETriggerEvent::Triggered, this, &APlayerCharacter::Interact);
+	EnhancedInputComponent->BindAction(AttackInput, ETriggerEvent::Triggered, this, &APlayerCharacter::Attack);
 }
 
 void APlayerCharacter::MoveForward()
@@ -89,14 +94,52 @@ void APlayerCharacter::Interact()
 
 	// Getting the tile data to check
 	const FVector CheckLocation = FVector(GetActorLocation() + (this->GetActorForwardVector() * GridManager->GridTileSize));
-	const FGridTileStruct Tile = GridManager->GetClosestTile(CheckLocation);
+	FGridTileStruct Tile;
+	if (!GetForwardTile(Tile))
+	{
+		return;
+	}
 	UE_LOG(LogTemp, Display, TEXT("Interact: checking actors on tile location (%f, %f, %f)!"), Tile.Position.X, Tile.Position.Y, Tile.Position.Z);
 
 	// Checking each actor
 	for (AActor* OccupyingActor : Tile.ActorsOccupying)
 	{
-		UE_LOG(LogTemp, Display, TEXT("Checking if an actor has the interaction interface."));
+		UE_LOG(LogTemp, Display, TEXT("Attempting to interact."));
 		IInteract::Execute_OnInteract(OccupyingActor, this);
 	}
 }
 
+void APlayerCharacter::Attack()
+{
+	// Get the tile to attack
+	FGridTileStruct Tile;
+
+	// If bad forward tile, do not attack
+	if (!GetForwardTile(Tile))
+	{
+		return;
+	}
+
+	// Identify a valid target actor
+	AActor* Target{};
+	for (AActor* OccupyingActor : Tile.ActorsOccupying)
+	{
+
+	}
+	IAttack::Execute_OnAttack(EquippedWeapon, this, Target);
+}
+
+// Returns a reference to the tile directly in front of the player, returns false if forward tile doesn't exist
+bool APlayerCharacter::GetForwardTile(FGridTileStruct& Tile)
+{
+	const FVector CheckLocation = FVector(GetActorLocation() + (this->GetActorForwardVector() * GridManager->GridTileSize));
+	Tile = GridManager->GetClosestTile(CheckLocation);
+	if (Tile.Position == GridManager->GetClosestTile(this->GetActorLocation()).Position)
+	{
+		return false;
+	}
+	else
+	{
+		return true;
+	}
+}
