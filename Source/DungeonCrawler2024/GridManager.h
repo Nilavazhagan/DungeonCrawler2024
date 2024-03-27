@@ -57,23 +57,23 @@ public:
 
 
 	// Using an image to generate grid
-	UPROPERTY(EditAnywhere, Category = "GridEditing")
+	UPROPERTY(EditAnywhere, Category = "GridManager|GridEditing")
 	bool bIsGeneratedFromImage = false;
-	UPROPERTY(EditAnywhere, Category = "GridEditing")
+	UPROPERTY(EditAnywhere, Category = "GridManager|GridEditing")
 	UTexture2D* GenerationImage;
 
 
 	// Grid Editing Interface Stuff
-	UPROPERTY(EditInstanceOnly, EditFixedSize, Category = "GridEditing|ManualEdit")
+	UPROPERTY(EditInstanceOnly, EditFixedSize, Category = "GridManager|GridEditing|ManualEdit")
 	TArray<int> SelectionTile1{ 0, 0 };
-	UPROPERTY(EditInstanceOnly, Category = "GridEditing|ManualEdit", meta = (DisplayName = "MultiSelect"))
+	UPROPERTY(EditInstanceOnly, Category = "GridManager|GridEditing|ManualEdit", meta = (DisplayName = "MultiSelect"))
 	bool bMultiSelect{ false };
-	UPROPERTY(EditInstanceOnly, EditFixedSize, Category = "GridEditing|ManualEdit")
+	UPROPERTY(EditInstanceOnly, EditFixedSize, Category = "GridManager|GridEditing|ManualEdit")
 	TArray<int> SelectionTile2{ 0, 0 };
-	UPROPERTY(EditInstanceOnly, Category = "GridEditing|ManualEdit", meta = (DisplayName = "Tile Type"))
+	UPROPERTY(EditInstanceOnly, Category = "GridManager|GridEditing|ManualEdit", meta = (DisplayName = "Tile Type"))
 	ETileTypes AppliedTileType{ ETileTypes::empty };
 	// bApply is a bool checkbox that can work like a simple button
-	UPROPERTY(EditInstanceOnly, Category = "GridEditing|ManualEdit", meta = (DisplayName = "Apply"))
+	UPROPERTY(EditInstanceOnly, Category = "GridManager|GridEditing|ManualEdit", meta = (DisplayName = "Apply"))
 	bool bApply{ false };
 
 
@@ -98,7 +98,7 @@ public:
 	UFUNCTION()
 	bool GetAdjacentTile(FGridTileStruct& SourceTile, FVector Direction, FGridTileStruct& AdjacentTile);
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void RegisterActor(AActor* Actor);
 
 	// Set a Tile's type in the grid
@@ -121,5 +121,4 @@ private:
 	TMap<ETileTypes, UInstancedStaticMeshComponent*> ISMMap;
 	TArray<ETileTypes> TileKeyArray;
 	TMap<FColor, ETileTypes> ColorToTileMap;
-
 };

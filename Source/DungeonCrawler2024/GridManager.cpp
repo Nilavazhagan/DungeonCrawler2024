@@ -4,6 +4,7 @@
 #include "GridManager.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Components/SceneComponent.h"
+#include "TileBlockingComponent.h"
 
 // Sets default values and other construction things
 AGridManager::AGridManager()
@@ -236,6 +237,8 @@ void AGridManager::GenerateFromImage()
 	MippityMappity.BulkData.Unlock();
 }
 
+// The grid manager moves and re-registers actor from its current tile to an adjacent one based on direction.
+// Checks for movement blocking
 bool AGridManager::MoveActor(AActor* Actor, FVector Direction)
 {
 	Direction.Normalize();
@@ -243,10 +246,23 @@ bool AGridManager::MoveActor(AActor* Actor, FVector Direction)
 	FVector NewLocation = OldLocation + (Direction * GridTileSize);
 
 	FGridTileStruct OldTile = GetClosestTile(OldLocation);
-
 	FGridTileStruct NewTile = GetClosestTile(NewLocation);
 
+	// Check if the NewTile has any actors that block movement
+	for (AActor* OccupyingActor : NewTile.ActorsOccupying)
+	{
+		UTileBlockingComponent* TileBlocker = OccupyingActor->GetComponentByClass<UTileBlockingComponent>();
+		if (TileBlocker && TileBlocker->bDoesBlockTile)
+		{
+			return false;
+		}
+	}
+
 	Actor->SetActorLocation(FVector(NewLocation.X, NewLocation.Y, OldLocation.Z));
+
+	// Re-register actor at the new tile.
+	OldTile.ActorsOccupying.Remove(Actor);
+	NewTile.ActorsOccupying.Add(Actor);
 
 	return true;
 }

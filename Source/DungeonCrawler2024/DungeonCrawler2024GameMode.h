@@ -18,7 +18,8 @@ protected:
 public:
 	ADungeonCrawler2024GameMode();
 
-	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
+	// Assigned GridManager should be read-only outside of this class
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite)
 	AGridManager* GridManager;
 };
 
