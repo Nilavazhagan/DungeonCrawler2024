@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "DamageComponent.h"
 #include "InputAction.h"
 #include "DungeonCrawler2024/DungeonCrawler2024Character.h"
 #include "DungeonCrawler2024/GridManager.h"

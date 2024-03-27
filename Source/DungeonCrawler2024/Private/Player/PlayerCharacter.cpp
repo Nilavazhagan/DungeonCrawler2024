@@ -9,6 +9,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Interact.h"
 #include "Attack.h"
+#include "HealthComponent.h"
 
 
 // Sets default values
