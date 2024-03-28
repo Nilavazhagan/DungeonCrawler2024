@@ -16,12 +16,14 @@ public:
 	// Sets default values for this component's properties
 	UHealthComponent();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int InitialHealth;
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int InitialHealth;
+
 
 	UPROPERTY(VisibleInstanceOnly)
 	int CurrentHealth;

@@ -17,6 +17,7 @@ AEnemy::AEnemy()
 
 	Health = CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
 	Health->RegisterComponent();
+	Health->InitialHealth = 3;
 
 	DamageComponent = CreateDefaultSubobject<UDamageComponent>(TEXT("DamageComponent"));
 	DamageComponent->RegisterComponent();
