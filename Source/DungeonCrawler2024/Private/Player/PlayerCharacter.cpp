@@ -122,7 +122,7 @@ void APlayerCharacter::Attack()
 	}
 
 	UE_LOG(LogTemp, Display, TEXT("Player character is attacking!"))
-
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Player is attacking!"));
 	// Get the tile to attack
 	FGridTileStruct Tile;
 
@@ -134,10 +134,17 @@ void APlayerCharacter::Attack()
 
 	// Identify a valid target actor
 	AActor* Target{};
+	
 	for (AActor* OccupyingActor : Tile.ActorsOccupying)
 	{
-		if (OccupyingActor->GetComponentByClass<UHealthComponent>())
+		FString ActorName = OccupyingActor->GetActorNameOrLabel();
+		UE_LOG(LogTemp, Display, TEXT("Attack is checking actor: %s"), *ActorName);
+		UHealthComponent* TargetHealth = OccupyingActor->GetComponentByClass<UHealthComponent>();
+		bool bHasHealth = TargetHealth ? true : false;
+		UE_LOG(LogTemp, Display, TEXT("Actor %s bHasHealth is %d"), *ActorName, bHasHealth);
+		if (TargetHealth)
 		{
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("OccupyingActor is set to be the target!"));
 			Target = OccupyingActor;
 			break;
 		}

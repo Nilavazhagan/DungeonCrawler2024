@@ -21,6 +21,5 @@ void UDamageComponent::DealDamageTo(AActor* Target)
 	UHealthComponent* TargetHealth = Target->GetComponentByClass<UHealthComponent>();
 	if (!TargetHealth) return;
 	TargetHealth->ReceiveDamage(Damage);
-	return;
 }
 
