@@ -29,7 +29,7 @@ void UHealthComponent::BeginPlay()
 void UHealthComponent::ReceiveDamage(int Damage)
 {
 	CurrentHealth -= Damage;
-	if (CurrentHealth < Min_Health)
+	if (CurrentHealth <= Min_Health)
 		Die();
 }
 
