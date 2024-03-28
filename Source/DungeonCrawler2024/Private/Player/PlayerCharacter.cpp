@@ -25,6 +25,9 @@ APlayerCharacter::APlayerCharacter()
 
 	TorchHolder = CreateDefaultSubobject<UChildActorComponent>(TEXT("TorchHolder"));
 	TorchHolder->SetupAttachment(this->GetRootComponent());
+
+	KeyInventory = CreateDefaultSubobject<UKeysInventoryComponent>(TEXT("KeysInventoryComponent"));
+	KeyInventory->RegisterComponent();
 }
 
 // Called when the game starts or when spawned

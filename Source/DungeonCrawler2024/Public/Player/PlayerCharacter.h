@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "DamageComponent.h"
+#include "KeysInventoryComponent.h"
 #include "InputAction.h"
 #include "DungeonCrawler2024/DungeonCrawler2024Character.h"
 #include "DungeonCrawler2024/GridManager.h"
@@ -19,13 +20,15 @@ public:
 	// Sets default values for this character's properties
 	APlayerCharacter();
 
-	// Due to what seems to be a bug with Unreal. To access the defaults for this property, drag it
-	// into the blueprint event graph like a variable, and it is editable there, even if not attached
-	// to anything.
+	// The holders for the player's torch weapon and any weapon they find along the way
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
 	UChildActorComponent* EquippedWeaponHolder;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
 	UChildActorComponent* TorchHolder;
+	
+	// The Player's keyinventory component
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UKeysInventoryComponent* KeyInventory;
 
 protected:
 	// Called when the game starts or when spawned
