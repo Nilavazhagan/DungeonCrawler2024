@@ -251,40 +251,53 @@ FGridTileStruct& AGridManager::GetAdjacentTileInDirection(FVector Location, FVec
 	return NewTile;
 }
 
+bool AGridManager::IsTileBlocking(FGridTileStruct Tile)
+{
+	// Block movement into walls
+	if (Tile.TileType == ETileTypes::wall)
+	{
+		return true;
+	}
+
+	// Check if the NewTile has any actors that block movement
+	for (AActor* OccupyingActor : Tile.ActorsOccupying)
+	{
+		UTileBlockingComponent* TileBlocker = OccupyingActor->GetComponentByClass<UTileBlockingComponent>();
+		if (TileBlocker && TileBlocker->bDoesBlockTile)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 // The grid manager moves and re-registers actor from its current tile to an adjacent one based on direction.
 // Checks for movement blocking
 bool AGridManager::MoveActor(AActor* Actor, FVector Direction)
 {
 	const FVector OldLocation = Actor->GetActorLocation();
-	FGridTileStruct& OldTile = GetClosestTile(OldLocation);
-
 	FGridTileStruct& NewTile = GetAdjacentTileInDirection(OldLocation, Direction);
 
-	// Block movement into walls
-	if (NewTile.TileType == ETileTypes::wall)
-	{
-		return false;
-	}
+	return MoveActorTo(Actor, NewTile);
+}
 
-	// Check if the NewTile has any actors that block movement
-	for (AActor* OccupyingActor : NewTile.ActorsOccupying)
-	{
-		UTileBlockingComponent* TileBlocker = OccupyingActor->GetComponentByClass<UTileBlockingComponent>();
-		if (TileBlocker && TileBlocker->bDoesBlockTile)
-		{
-			return false;
-		}
-	}
+bool AGridManager::MoveActorTo(AActor* Actor, FGridTileStruct ToTile)
+{
+	const FVector OldLocation = Actor->GetActorLocation();
+	FGridTileStruct& OldTile = GetClosestTile(OldLocation);
+	if (IsTileBlocking(ToTile))
+		return false;
 
 	// Adjust player position to be in center of tile
 	Actor->SetActorLocation(
-		FVector(NewTile.Position.X + TileCenterOffset.X,
-				NewTile.Position.Y + TileCenterOffset.Y,
+		FVector(ToTile.Position.X + TileCenterOffset.X,
+				ToTile.Position.Y + TileCenterOffset.Y,
 				OldLocation.Z));
 
 	// Re-register actor at the new tile.
 	OldTile.ActorsOccupying.Remove(Actor);
-	NewTile.ActorsOccupying.Add(Actor);
+	ToTile.ActorsOccupying.Add(Actor);
 
 	return true;
 }
