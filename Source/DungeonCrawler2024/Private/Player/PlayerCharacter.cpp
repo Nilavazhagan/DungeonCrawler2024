@@ -18,8 +18,13 @@ APlayerCharacter::APlayerCharacter()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+
+
 	EquippedWeaponHolder = CreateDefaultSubobject<UChildActorComponent>(TEXT("EquippedWeaponHolder"));
 	EquippedWeaponHolder->SetupAttachment(this->GetRootComponent());
+
+	TorchHolder = CreateDefaultSubobject<UChildActorComponent>(TEXT("TorchHolder"));
+	TorchHolder->SetupAttachment(this->GetRootComponent());
 }
 
 // Called when the game starts or when spawned
@@ -30,7 +35,6 @@ void APlayerCharacter::BeginPlay()
 	const ADungeonCrawler2024GameMode* GameMode = Cast<ADungeonCrawler2024GameMode, AGameModeBase>(
 		UGameplayStatics::GetGameMode(this->GetWorld()));
 	GridManager = GameMode->GridManager;
-	GridManager->RegisterActor(this);
 }
 
 // Called every frame
@@ -115,14 +119,16 @@ void APlayerCharacter::Interact()
 
 void APlayerCharacter::Attack()
 {
+	UChildActorComponent* ActiveWeaponHolder;
 	if (!EquippedWeaponHolder->GetChildActor())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Player character is trying to attack with no weapon!"))
-		return;
+		ActiveWeaponHolder = TorchHolder;
+	}
+	else
+	{
+		ActiveWeaponHolder = EquippedWeaponHolder;
 	}
 
-	UE_LOG(LogTemp, Display, TEXT("Player character is attacking!"))
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Player is attacking!"));
 	// Get the tile to attack
 	FGridTileStruct Tile;
 
@@ -138,23 +144,17 @@ void APlayerCharacter::Attack()
 	for (AActor* OccupyingActor : Tile.ActorsOccupying)
 	{
 		FString ActorName = OccupyingActor->GetActorNameOrLabel();
-		UE_LOG(LogTemp, Display, TEXT("Attack is checking actor: %s"), *ActorName);
-		UHealthComponent* TargetHealth = OccupyingActor->GetComponentByClass<UHealthComponent>();
-		bool bHasHealth = TargetHealth ? true : false;
-		UE_LOG(LogTemp, Display, TEXT("Actor %s bHasHealth is %d"), *ActorName, bHasHealth);
-		if (TargetHealth)
+		if (OccupyingActor->GetComponentByClass<UHealthComponent>())
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("OccupyingActor is set to be the target!"));
 			Target = OccupyingActor;
 			break;
 		}
 	}
 
 	// Access the weapon and perform its attack if it has one
-	if (EquippedWeaponHolder->GetChildActor()->Implements<UAttack>())
+	if (ActiveWeaponHolder->GetChildActor()->Implements<UAttack>())
 	{
-		UE_LOG(LogTemp, Display, TEXT("Equipped Weapon implements the attack interface."))
-		IAttack::Execute_OnAttack(EquippedWeaponHolder->GetChildActor(), this, Target);
+		IAttack::Execute_OnAttack(ActiveWeaponHolder->GetChildActor(), this, Target);
 	}
 	else
 	{

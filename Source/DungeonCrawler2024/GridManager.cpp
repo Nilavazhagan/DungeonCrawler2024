@@ -243,11 +243,11 @@ void AGridManager::RegenerateFromImage()
 	OnConstruction(this->GetActorTransform());
 }
 
-FGridTileStruct AGridManager::GetAdjacentTileInDirection(FVector Location, FVector Direction)
+FGridTileStruct& AGridManager::GetAdjacentTileInDirection(FVector Location, FVector Direction)
 {
 	Direction.Normalize();
 	FVector NewLocation = Location + (Direction * GridTileSize);
-	FGridTileStruct NewTile = GetClosestTile(NewLocation);
+	FGridTileStruct& NewTile = GetClosestTile(NewLocation);
 	return NewTile;
 }
 
@@ -256,9 +256,9 @@ FGridTileStruct AGridManager::GetAdjacentTileInDirection(FVector Location, FVect
 bool AGridManager::MoveActor(AActor* Actor, FVector Direction)
 {
 	const FVector OldLocation = Actor->GetActorLocation();
-	FGridTileStruct OldTile = GetClosestTile(OldLocation);
+	FGridTileStruct& OldTile = GetClosestTile(OldLocation);
 
-	FGridTileStruct NewTile = GetAdjacentTileInDirection(OldLocation, Direction);
+	FGridTileStruct& NewTile = GetAdjacentTileInDirection(OldLocation, Direction);
 
 	// Block movement into walls
 	if (NewTile.TileType == ETileTypes::wall)

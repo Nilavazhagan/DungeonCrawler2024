@@ -112,7 +112,7 @@ public:
 	void RegenerateFromImage();
 
 	UFUNCTION()
-	FGridTileStruct GetAdjacentTileInDirection(FVector Location, FVector Direction);
+	FGridTileStruct& GetAdjacentTileInDirection(FVector Location, FVector Direction);
 
 protected:
 	// Called when the game starts or when spawned

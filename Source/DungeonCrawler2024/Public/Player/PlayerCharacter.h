@@ -24,6 +24,8 @@ public:
 	// to anything.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
 	UChildActorComponent* EquippedWeaponHolder;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+	UChildActorComponent* TorchHolder;
 
 protected:
 	// Called when the game starts or when spawned
