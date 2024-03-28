@@ -96,6 +96,9 @@ public:
 	UFUNCTION()
 	bool MoveActor(AActor* Actor, FVector Direction);
 
+	UFUNCTION()
+	bool MoveActorTo(AActor* Actor, FGridTileStruct ToTile);
+
 	UFUNCTION(BlueprintCallable)
 	void RegisterActor(AActor* Actor);
 
@@ -113,6 +116,9 @@ public:
 
 	UFUNCTION()
 	FGridTileStruct& GetAdjacentTileInDirection(FVector Location, FVector Direction);
+
+	UFUNCTION()
+	bool IsTileBlocking(FGridTileStruct Tile);
 
 protected:
 	// Called when the game starts or when spawned

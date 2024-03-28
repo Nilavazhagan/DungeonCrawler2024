@@ -21,6 +21,12 @@ public:
 	// Assigned GridManager should be read-only outside of this class
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite)
 	AGridManager* GridManager;
+
+	UDELEGATE()
+	DECLARE_DYNAMIC_DELEGATE(FOnPlayerTick);
+
+	UPROPERTY()
+	FOnPlayerTick OnPlayerTick;
 };
 
 

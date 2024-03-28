@@ -18,8 +18,6 @@ APlayerCharacter::APlayerCharacter()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-
-
 	EquippedWeaponHolder = CreateDefaultSubobject<UChildActorComponent>(TEXT("EquippedWeaponHolder"));
 	EquippedWeaponHolder->SetupAttachment(this->GetRootComponent());
 
@@ -35,7 +33,7 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	const ADungeonCrawler2024GameMode* GameMode = Cast<ADungeonCrawler2024GameMode, AGameModeBase>(
+	GameMode = Cast<ADungeonCrawler2024GameMode, AGameModeBase>(
 		UGameplayStatics::GetGameMode(this->GetWorld()));
 	GridManager = GameMode->GridManager;
 }
@@ -66,32 +64,38 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 void APlayerCharacter::MoveForward()
 {
-	GridManager->MoveActor(this, GetActorForwardVector());
+	const bool Moved = GridManager->MoveActor(this, GetActorForwardVector());
+	TickIfTrue(Moved);
 }
 
 void APlayerCharacter::MoveBackward()
 {
-	GridManager->MoveActor(this, -1 * GetActorForwardVector());
+	const bool Moved = GridManager->MoveActor(this, -1 * GetActorForwardVector());
+	TickIfTrue(Moved);
 }
 
 void APlayerCharacter::MoveLeft()
 {
-	GridManager->MoveActor(this, -1 * GetActorRightVector());
+	const bool Moved =GridManager->MoveActor(this, -1 * GetActorRightVector());
+	TickIfTrue(Moved);
 }
 
 void APlayerCharacter::MoveRight()
 {
-	GridManager->MoveActor(this, GetActorRightVector());
+	const bool Moved = GridManager->MoveActor(this, GetActorRightVector());
+	TickIfTrue(Moved);
 }
 
 void APlayerCharacter::TurnRight()
 {
 	AddActorLocalRotation(FRotator(0, 90, 0));
+	TickIfTrue();
 }
 
 void APlayerCharacter::TurnLeft()
 {
 	AddActorLocalRotation(FRotator(0, -90, 0));
+	TickIfTrue();
 }
 
 // Upon pressing the interact key, triggers the interact interface on any actors
@@ -116,6 +120,8 @@ void APlayerCharacter::Interact()
 		if (OccupyingActor->Implements<UInteract>())
 		{
 			IInteract::Execute_OnInteract(OccupyingActor, this);
+			TickIfTrue();
+			break;
 		}
 	}
 }
@@ -158,11 +164,18 @@ void APlayerCharacter::Attack()
 	if (ActiveWeaponHolder->GetChildActor()->Implements<UAttack>())
 	{
 		IAttack::Execute_OnAttack(ActiveWeaponHolder->GetChildActor(), this, Target);
+		TickIfTrue();
 	}
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Equipped Weapon DOES NOT implement the attack interface!"))
 	}
+}
+
+void APlayerCharacter::TickIfTrue(bool Check) const
+{
+	if (Check)
+		GameMode->OnPlayerTick.ExecuteIfBound();
 }
 
 // Returns a reference to the tile directly in front of the player, returns false if forward tile doesn't exist

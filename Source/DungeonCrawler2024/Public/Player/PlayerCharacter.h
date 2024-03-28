@@ -7,6 +7,7 @@
 #include "KeysInventoryComponent.h"
 #include "InputAction.h"
 #include "DungeonCrawler2024/DungeonCrawler2024Character.h"
+#include "DungeonCrawler2024/DungeonCrawler2024GameMode.h"
 #include "DungeonCrawler2024/GridManager.h"
 #include "GameFramework/Character.h"
 #include "PlayerCharacter.generated.h"
@@ -50,6 +51,8 @@ protected:
 
 	void Attack();
 
+	void TickIfTrue(bool Check = true) const;
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -88,6 +91,9 @@ public:
 
 private:
 
+	UPROPERTY()
+	ADungeonCrawler2024GameMode* GameMode;
+	UPROPERTY()
 	AGridManager* GridManager;
 
 	// Gets the tile directly in front of the player
