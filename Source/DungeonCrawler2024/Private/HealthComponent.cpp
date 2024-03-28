@@ -12,6 +12,8 @@ UHealthComponent::UHealthComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	// ...
+	InitialHealth = MaxHealth;
+
 }
 
 
@@ -24,28 +26,18 @@ void UHealthComponent::BeginPlay()
 	CurrentHealth = InitialHealth;
 }
 
-
-// Called every frame
-void UHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType,
-                                     FActorComponentTickFunction* ThisTickFunction)
+void UHealthComponent::ReceiveDamage(int Damage)
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
-}
-
-void UHealthComponent::ReceiveDamage(int damage)
-{
-	CurrentHealth -= damage;
+	CurrentHealth -= Damage;
 	if (CurrentHealth < Min_Health)
 		Die();
 }
 
-void UHealthComponent::Heal(int healAmt)
+void UHealthComponent::Heal(int HealAmt)
 {
-	CurrentHealth += healAmt;
-	if (CurrentHealth > Max_Health)
-		CurrentHealth = Max_Health;
+	CurrentHealth += HealAmt;
+	if (CurrentHealth > MaxHealth)
+		CurrentHealth = MaxHealth;
 }
 
 void UHealthComponent::Die()

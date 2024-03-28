@@ -21,15 +21,12 @@ protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int InitialHealth = Max_Health;
+	int InitialHealth;
 
 	UPROPERTY(VisibleInstanceOnly)
 	int CurrentHealth;
 
 public:
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
-	                           FActorComponentTickFunction* ThisTickFunction) override;
 
 	UFUNCTION(BlueprintCallable)
 	void ReceiveDamage(int damage);
@@ -42,6 +39,8 @@ private:
 	UFUNCTION()
 	void Die();
 
-	const int Min_Health = 0;
-	const int Max_Health = 100;
+	const int Min_Health{ 0 };
+
+	UPROPERTY(EditAnywhere)
+	int MaxHealth{ 10 };
 };

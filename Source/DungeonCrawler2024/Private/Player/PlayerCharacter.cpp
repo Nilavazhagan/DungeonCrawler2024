@@ -136,7 +136,11 @@ void APlayerCharacter::Attack()
 	AActor* Target{};
 	for (AActor* OccupyingActor : Tile.ActorsOccupying)
 	{
-
+		if (OccupyingActor->GetComponentByClass<UHealthComponent>())
+		{
+			Target = OccupyingActor;
+			break;
+		}
 	}
 
 	// Access the weapon and perform its attack if it has one
