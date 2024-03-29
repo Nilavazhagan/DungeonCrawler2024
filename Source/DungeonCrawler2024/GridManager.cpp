@@ -282,7 +282,7 @@ bool AGridManager::MoveActor(AActor* Actor, FVector Direction)
 	return MoveActorTo(Actor, NewTile);
 }
 
-bool AGridManager::MoveActorTo(AActor* Actor, FGridTileStruct ToTile)
+bool AGridManager::MoveActorTo(AActor* Actor, FGridTileStruct& ToTile)
 {
 	const FVector OldLocation = Actor->GetActorLocation();
 	FGridTileStruct& OldTile = GetClosestTile(OldLocation);

@@ -97,7 +97,7 @@ public:
 	bool MoveActor(AActor* Actor, FVector Direction);
 
 	UFUNCTION()
-	bool MoveActorTo(AActor* Actor, FGridTileStruct ToTile);
+	bool MoveActorTo(AActor* Actor, FGridTileStruct& ToTile);
 
 	UFUNCTION(BlueprintCallable)
 	void RegisterActor(AActor* Actor);
