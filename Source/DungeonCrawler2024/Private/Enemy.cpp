@@ -97,7 +97,9 @@ void AEnemy::Move()
 	// This is fine for now, as it should be a very rare occurence.
 	const FGridTileStruct NextTile = AdjacentTiles[NextTileIndex];
 	RotateTowards(NextTile.Position);
-	GridManager->MoveActorTo(this, AdjacentTiles[NextTileIndex]);
+	// Because AdjacentTiles is full of copies, use the copy's position data to get a reference to the original from the GridManager.
+	FGridTileStruct& NextTileOriginal = GridManager->GetClosestTile(AdjacentTiles[NextTileIndex].Position);
+	GridManager->MoveActorTo(this, NextTileOriginal);
 }
 
 void AEnemy::RotateTowards(const FVector& LookAt)

@@ -31,14 +31,16 @@ void UPickupComponent::BeginPlay()
 	Collider->OnComponentBeginOverlap.AddDynamic(this, &UPickupComponent::OnCollision);
 }
 
-// 
+
 void UPickupComponent::OnCollision(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& Hit)
 {
+	// Check if the other actor is the player character.
 	const APlayerCharacter* playerChar = Cast<APlayerCharacter>(OtherActor);
 	if (playerChar == nullptr)
 		return;
 
+	// Call on pickup on the actor that owns this component.
 	OnPickup.ExecuteIfBound(playerChar);
 
 	if (bDestroyOnCollision)
