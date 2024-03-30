@@ -178,6 +178,11 @@ void APlayerCharacter::TickIfTrue(bool Check) const
 		GameMode->OnPlayerTick.ExecuteIfBound();
 }
 
+void APlayerCharacter::Equip(AActor* Weapon) const
+{
+	EquippedWeaponHolder->SetChildActorClass(Weapon->GetClass());
+}
+
 // Returns a reference to the tile directly in front of the player, returns false if forward tile doesn't exist
 bool APlayerCharacter::GetForwardTile(FGridTileStruct& Tile)
 {

@@ -87,7 +87,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
 	UInputAction* AttackInput;
 
-
+	UFUNCTION()
+	void Equip(AActor* Weapon) const;
 
 private:
 
