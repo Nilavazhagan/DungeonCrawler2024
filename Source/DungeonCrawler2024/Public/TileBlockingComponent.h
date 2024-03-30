@@ -19,10 +19,14 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Tile Blocking", meta = (DisplayName = "Does Block Tile"))
 	bool bDoesBlockTile;
 
+	UDELEGATE()
+	DECLARE_DYNAMIC_DELEGATE_OneParam(FOnDestroy, const AActor*, Actor);
+
+	UPROPERTY()
+	FOnDestroy OnDestroy;
+
 protected:
 	virtual void BeginPlay() override;
-
-public:	
-
-		
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	
 };

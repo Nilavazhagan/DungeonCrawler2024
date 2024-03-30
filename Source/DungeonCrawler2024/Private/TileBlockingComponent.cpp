@@ -22,6 +22,13 @@ void UTileBlockingComponent::BeginPlay()
 
 	const ADungeonCrawler2024GameMode* GameMode = Cast<ADungeonCrawler2024GameMode, AGameModeBase>(
 		UGameplayStatics::GetGameMode(this->GetWorld()));
-	GameMode->GridManager->RegisterActor(this->GetOwner());
+	GameMode->GridManager->RegisterActor(GetOwner());
+}
+
+void UTileBlockingComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	OnDestroy.ExecuteIfBound(GetOwner());
 }
 

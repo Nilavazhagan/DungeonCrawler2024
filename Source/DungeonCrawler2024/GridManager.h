@@ -102,6 +102,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void RegisterActor(AActor* Actor);
 
+	UFUNCTION(BlueprintCallable)
+	void UnregisterActor(const AActor* Actor);
+
 	// Set a Tile's type in the grid
 	UFUNCTION()
 	void SetTileType(ETileTypes Type, int X, int Y);
