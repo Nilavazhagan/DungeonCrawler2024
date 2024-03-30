@@ -318,6 +318,25 @@ void AGridManager::RegisterActor(AActor* Actor)
 		FVector(Tile.Position.X + TileCenterOffset.X,
 				Tile.Position.Y + TileCenterOffset.Y,
 				CurrentLocation.Z));
+
+	UTileBlockingComponent* TileBlockingComponent = Cast<UTileBlockingComponent>(
+		Actor->GetComponentByClass(UTileBlockingComponent::StaticClass()));
+	TileBlockingComponent->OnDestroy.BindDynamic(this, &AGridManager::UnregisterActor);
+}
+
+void AGridManager::UnregisterActor(const AActor* Actor)
+{
+	for (FGridTileStruct& Tile : Grid)
+	{
+		if (!Tile.ActorsOccupying.IsEmpty() && Tile.ActorsOccupying.Contains(Actor))
+		{
+			Tile.ActorsOccupying.Remove(Actor);
+			UTileBlockingComponent* TileBlockingComponent = Cast<UTileBlockingComponent>(
+				Actor->GetComponentByClass(UTileBlockingComponent::StaticClass()));
+			TileBlockingComponent->OnDestroy.Unbind();
+			break;
+		}
+	}
 }
 
 // Set Tile Type
