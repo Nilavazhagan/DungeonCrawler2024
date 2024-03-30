@@ -24,10 +24,6 @@ protected:
 	bool bDestroyOnCollision = true;
 
 public:
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
-	                           FActorComponentTickFunction* ThisTickFunction) override;
-
 	UDELEGATE()
 	DECLARE_DYNAMIC_DELEGATE_OneParam(FOnPickupDelegate, const AActor*, Actor);
 

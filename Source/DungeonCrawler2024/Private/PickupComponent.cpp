@@ -12,7 +12,7 @@ UPickupComponent::UPickupComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 
 	// ...
 }
@@ -31,16 +31,7 @@ void UPickupComponent::BeginPlay()
 	Collider->OnComponentBeginOverlap.AddDynamic(this, &UPickupComponent::OnCollision);
 }
 
-
-// Called every frame
-void UPickupComponent::TickComponent(float DeltaTime, ELevelTick TickType,
-                                     FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
-}
-
+// 
 void UPickupComponent::OnCollision(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& Hit)
 {
@@ -48,7 +39,7 @@ void UPickupComponent::OnCollision(UPrimitiveComponent* OverlappedComponent, AAc
 	if (playerChar == nullptr)
 		return;
 
-	OnPickup.ExecuteIfBound(OtherActor);
+	OnPickup.ExecuteIfBound(playerChar);
 
 	if (bDestroyOnCollision)
 		GetOwner()->Destroy();
