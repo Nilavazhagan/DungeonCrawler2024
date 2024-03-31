@@ -23,7 +23,7 @@ public:
 	AGridManager* GridManager;
 
 	UDELEGATE()
-	DECLARE_DYNAMIC_DELEGATE(FOnPlayerTick);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerTick);
 
 	UPROPERTY()
 	FOnPlayerTick OnPlayerTick;
