@@ -3,7 +3,6 @@
 
 #include "Enemy.h"
 
-#include "Attack.h"
 #include "DungeonCrawler2024/DungeonCrawler2024GameMode.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -41,8 +40,8 @@ void AEnemy::BeginPlay()
 
 	GameMode->OnPlayerTick.AddDynamic(this, &AEnemy::OnPlayerTick);
 
-	check(PatrolTargets.Num() >= 2);
-	CurrentTarget = PatrolTargets[0];
+	if (PatrolTargets.Num() > 0)
+		CurrentTarget = PatrolTargets[0];
 }
 
 void AEnemy::EndPlay(EEndPlayReason::Type Reason)
@@ -73,6 +72,9 @@ TArray<FGridTileStruct> AEnemy::GetAdjacentTiles()
 
 void AEnemy::Move()
 {
+	if (CurrentTarget == nullptr)
+		return;
+	
 	TArray<FGridTileStruct> AdjacentTiles = GetAdjacentTiles();
 
 	float MinDistance = TNumericLimits<float>::Max();
@@ -137,6 +139,9 @@ int AEnemy::GetPlayerDistance()
 
 AActor* AEnemy::GetClosestPatrolTarget()
 {
+	if (PatrolTargets.Num() <= 0)
+		return nullptr;
+	
 	float MinDistance = TNumericLimits<float>::Max();
 	int MinTargetIndex = 0;
 	for (int i = 0, count = PatrolTargets.Num(); i < count; i++)
@@ -162,6 +167,9 @@ void AEnemy::UpdateTarget()
 		// When switching from Player-chasing to patrolling mode, just choose the closest patrol target
 		CurrentTarget = GetClosestPatrolTarget();
 	}
+
+	if (CurrentTarget == nullptr)
+		return;
 
 	const FVector CurrentTargetLocation = CurrentTarget->GetActorLocation();
 	const FVector MyLocation = GetActorLocation();
