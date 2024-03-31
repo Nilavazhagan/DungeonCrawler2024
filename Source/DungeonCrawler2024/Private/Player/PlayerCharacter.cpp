@@ -25,14 +25,14 @@ APlayerCharacter::APlayerCharacter()
 	TorchHolder->SetupAttachment(this->GetRootComponent());
 
 	KeyInventory = CreateDefaultSubobject<UKeysInventoryComponent>(TEXT("KeysInventoryComponent"));
-	KeyInventory->RegisterComponent();
+
 }
 
 // Called when the game starts or when spawned
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
+	KeyInventory->RegisterComponent();
 	GameMode = Cast<ADungeonCrawler2024GameMode, AGameModeBase>(
 		UGameplayStatics::GetGameMode(this->GetWorld()));
 	GridManager = GameMode->GridManager;

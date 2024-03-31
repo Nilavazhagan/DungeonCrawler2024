@@ -13,7 +13,6 @@ UHealthComponent::UHealthComponent()
 
 	InitialHealth = MaxHealth;
 	CurrentHealth = InitialHealth;
-	this->RegisterComponent();
 }
 
 

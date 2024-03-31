@@ -40,7 +40,6 @@ AGridManager::AGridManager()
 		// Creating the InstancedStaticMesh component as a subobject under the manager's root component
 		FString NewComponentName = FString::Printf(TEXT("InstancedStaticMeshComponent %i"), i);
 		UInstancedStaticMeshComponent* ISM = CreateDefaultSubobject<UInstancedStaticMeshComponent>(FName(NewComponentName));
-		ISM->RegisterComponent();
 		ISM->SetupAttachment(RootComponent);
 		ISM->InstancingRandomSeed = 69;
 		this->AddInstanceComponent(ISM);

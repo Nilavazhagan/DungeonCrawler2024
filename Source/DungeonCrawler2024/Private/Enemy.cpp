@@ -15,15 +15,14 @@ AEnemy::AEnemy()
 	PrimaryActorTick.bCanEverTick = true;
 
 	Health = CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
-	Health->RegisterComponent();
 	Health->InitialHealth = 3;
 
 	DamageComponent = CreateDefaultSubobject<UDamageComponent>(TEXT("DamageComponent"));
-	DamageComponent->RegisterComponent();
+
 	DamageComponent->Damage = 1;
 
 	TileBlockingComponent = CreateDefaultSubobject<UTileBlockingComponent>(TEXT("TileBlockingComponent"));
-	TileBlockingComponent->RegisterComponent();
+
 
 	EquippedWeaponHolder = CreateDefaultSubobject<UChildActorComponent>(TEXT("EquippedWeaponHolder"));
 	EquippedWeaponHolder->SetupAttachment(this->GetRootComponent());
@@ -33,6 +32,10 @@ AEnemy::AEnemy()
 void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
+	Health->RegisterComponent();
+	DamageComponent->RegisterComponent();
+	TileBlockingComponent->RegisterComponent();
+
 	GameMode = Cast<ADungeonCrawler2024GameMode, AGameModeBase>(
 		UGameplayStatics::GetGameMode(this->GetWorld()));
 	Player = UGameplayStatics::GetActorOfClass(this, APlayerCharacter::StaticClass());

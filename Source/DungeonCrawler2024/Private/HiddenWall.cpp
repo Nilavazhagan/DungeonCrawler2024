@@ -11,14 +11,13 @@ AHiddenWall::AHiddenWall()
 	PrimaryActorTick.bCanEverTick = true;
 
 	TileBlockingComponent = CreateDefaultSubobject<UTileBlockingComponent>(TEXT("TileBlockingComponent"));
-	TileBlockingComponent->RegisterComponent();
 }
 
 // Called when the game starts or when spawned
 void AHiddenWall::BeginPlay()
 {
 	Super::BeginPlay();
-
+	TileBlockingComponent->RegisterComponent();
 	if(bIsHidden == true)
 	{
 		RootComponent->SetVisibility(false, true);
