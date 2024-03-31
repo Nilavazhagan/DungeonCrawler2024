@@ -46,13 +46,13 @@ void AHiddenWallTrigger::Tick(float DeltaTime)
 
 		if (bLookedAtPrimaryWall == false)
 		{
-			const float WallAngleFromPlayer = FMath::RadiansToDegrees(acosf(FVector::DotProduct(PlayerForwardDirection, PrimaryWallDirection)));
-			if (WallAngleFromPlayer > 89)
+			if (PrimaryWallDirection.Equals(PlayerForwardDirection))
 				bLookedAtPrimaryWall = true;
 		}
 		else
 		{
-			if (!PrimaryWallDirection.Equals(PlayerForwardDirection))
+			float WallAngleFromPlayer = FMath::RadiansToDegrees(acosf(FVector::DotProduct(PlayerForwardDirection, PrimaryWallDirection)));
+			if (WallAngleFromPlayer > 89)
 			{
 				ToggleConnectedWalls();
 				bLookedAtPrimaryWall = false;
