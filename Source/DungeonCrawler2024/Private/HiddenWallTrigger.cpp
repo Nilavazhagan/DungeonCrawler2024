@@ -58,7 +58,7 @@ void AHiddenWallTrigger::Tick(float DeltaTime)
 		else
 		{
 			// If the dot product is less than 0, the player is looking more than 90 degrees away from the wall 
-			if (WallPlayerDotProduct <= 0.01)
+			if (WallPlayerDotProduct <= 0.01 || WallPlayerDotProduct == -0.0)
 			{
 				ToggleConnectedWalls();
 				bLookedAtPrimaryWall = false;
