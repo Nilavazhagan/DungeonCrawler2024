@@ -39,18 +39,16 @@ void AEnemy::BeginPlay()
 	GridManager = GameMode->GridManager;
 	GridTileSize = GridManager->GridTileSize;
 
-	GameMode->OnPlayerTick.BindDynamic(this, &AEnemy::OnPlayerTick);
+	GameMode->OnPlayerTick.AddDynamic(this, &AEnemy::OnPlayerTick);
 
 	check(PatrolTargets.Num() >= 2);
 	CurrentTarget = PatrolTargets[0];
 }
 
-void AEnemy::BeginDestroy()
+void AEnemy::EndPlay(EEndPlayReason::Type Reason)
 {
-	Super::BeginDestroy();
-
-	// TODO: Check if this is needed
-	// GameMode->OnPlayerTick.Unbind();
+	Super::EndPlay(Reason);
+	GameMode->OnPlayerTick.RemoveDynamic(this, &AEnemy::OnPlayerTick);
 }
 
 // Called every frame

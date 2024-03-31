@@ -33,7 +33,7 @@ void AHiddenWallTrigger::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (bIsPlayerInsideTrigger && TriggerMode == TriggerMode::LookAway)
+	if (bIsPlayerInsideTrigger && (TriggerMode == TriggerMode::LookAway || TriggerMode == TriggerMode::OnceAndLookAway))
 	{
 		const FVector PlayerLocation = PlayerActor->GetActorLocation();
 		FVector PlayerForwardDirection = PlayerActor->GetActorForwardVector();
@@ -43,7 +43,6 @@ void AHiddenWallTrigger::Tick(float DeltaTime)
 		const FVector PrimaryWallLocationAdjusted = FVector(PrimaryWallLocation.X, PrimaryWallLocation.Y, PlayerLocation.Z);
 		FVector PrimaryWallDirection = PrimaryWallLocationAdjusted - PlayerLocation;
 		PrimaryWallDirection.Normalize();
-		UE_LOG(LogTemp, Error, TEXT("Facing PrimaryWallDirection? %hs"), (PrimaryWallDirection.Equals(PlayerForwardDirection) ? "true" : "false"));
 
 		if (bLookedAtPrimaryWall == false)
 		{
@@ -52,10 +51,12 @@ void AHiddenWallTrigger::Tick(float DeltaTime)
 		}
 		else
 		{
-			if (!PrimaryWallDirection.Equals(PlayerForwardDirection))
+			float WallAngleFromPlayer = FMath::RadiansToDegrees(acosf(FVector::DotProduct(PlayerForwardDirection, PrimaryWallDirection)));
+			if (WallAngleFromPlayer > 89)
 			{
 				ToggleConnectedWalls();
 				bLookedAtPrimaryWall = false;
+				bIsFirstCollision = false;
 			}
 		}
 	}
@@ -85,6 +86,9 @@ void AHiddenWallTrigger::OnCollisionEnter(UPrimitiveComponent* OverlappedCompone
 	case TriggerMode::Everytime:
 		ToggleConnectedWalls();
 		break;
+	case TriggerMode::OnceAndLookAway:
+		if (!bIsFirstCollision)
+			break;
 	case TriggerMode::LookAway:
 		bIsPlayerInsideTrigger = true;
 		break;

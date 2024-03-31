@@ -181,9 +181,7 @@ void APlayerCharacter::Attack()
 void APlayerCharacter::TickIfTrue(bool Check) const
 {
 	if (Check)
-	{
-		GameMode->OnPlayerTick.ExecuteIfBound();
-	}
+		GameMode->OnPlayerTick.Broadcast();
 }
 
 void APlayerCharacter::Equip(AActor* Weapon) const

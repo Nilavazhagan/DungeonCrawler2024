@@ -23,6 +23,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int MaxHealth{ 10 };
 
+	UDELEGATE(BlueprintCallable)
+	DECLARE_DYNAMIC_DELEGATE(FDamageReceivedDelegate);
+	UPROPERTY(BlueprintReadWrite)
+	FDamageReceivedDelegate OnDamaged;
+
+	UDELEGATE(BlueprintCallable)
+	DECLARE_DYNAMIC_DELEGATE(FOnDeathDelegate);
+	UPROPERTY(BlueprintReadWrite)
+	FOnDeathDelegate OnDeath;
+
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
