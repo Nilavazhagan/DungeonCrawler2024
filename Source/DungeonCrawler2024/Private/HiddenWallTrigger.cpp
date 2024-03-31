@@ -33,7 +33,7 @@ void AHiddenWallTrigger::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (bIsPlayerInsideTrigger && TriggerMode == TriggerMode::LookAway)
+	if (bIsPlayerInsideTrigger && (TriggerMode == TriggerMode::LookAway || TriggerMode == TriggerMode::OnceAndLookAway))
 	{
 		const FVector PlayerLocation = PlayerActor->GetActorLocation();
 		FVector PlayerForwardDirection = PlayerActor->GetActorForwardVector();
@@ -56,6 +56,7 @@ void AHiddenWallTrigger::Tick(float DeltaTime)
 			{
 				ToggleConnectedWalls();
 				bLookedAtPrimaryWall = false;
+				bIsFirstCollision = false;
 			}
 		}
 	}
@@ -85,6 +86,9 @@ void AHiddenWallTrigger::OnCollisionEnter(UPrimitiveComponent* OverlappedCompone
 	case TriggerMode::Everytime:
 		ToggleConnectedWalls();
 		break;
+	case TriggerMode::OnceAndLookAway:
+		if (!bIsFirstCollision)
+			break;
 	case TriggerMode::LookAway:
 		bIsPlayerInsideTrigger = true;
 		break;
