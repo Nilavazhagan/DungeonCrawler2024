@@ -44,15 +44,21 @@ void AHiddenWallTrigger::Tick(float DeltaTime)
 		FVector PrimaryWallDirection = PrimaryWallLocationAdjusted - PlayerLocation;
 		PrimaryWallDirection.Normalize();
 
+
+		float WallPlayerDotProduct = FVector::DotProduct(PlayerForwardDirection, PrimaryWallDirection);
+		UE_LOG(LogTemp, Warning, TEXT("The dot product is %f"), WallPlayerDotProduct);
+
 		if (bLookedAtPrimaryWall == false)
 		{
-			if (PrimaryWallDirection.Equals(PlayerForwardDirection))
+			if (WallPlayerDotProduct > 0.5)
+			{
 				bLookedAtPrimaryWall = true;
+			}
 		}
 		else
 		{
-			float WallAngleFromPlayer = FMath::RadiansToDegrees(acosf(FVector::DotProduct(PlayerForwardDirection, PrimaryWallDirection)));
-			if (WallAngleFromPlayer > 89)
+			// If the dot product is less than 0, the player is looking more than 90 degrees away from the wall 
+			if (WallPlayerDotProduct <= 0.01)
 			{
 				ToggleConnectedWalls();
 				bLookedAtPrimaryWall = false;
