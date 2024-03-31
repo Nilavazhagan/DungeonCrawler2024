@@ -43,11 +43,11 @@ void AHiddenWallTrigger::Tick(float DeltaTime)
 		const FVector PrimaryWallLocationAdjusted = FVector(PrimaryWallLocation.X, PrimaryWallLocation.Y, PlayerLocation.Z);
 		FVector PrimaryWallDirection = PrimaryWallLocationAdjusted - PlayerLocation;
 		PrimaryWallDirection.Normalize();
-		UE_LOG(LogTemp, Error, TEXT("Facing PrimaryWallDirection? %hs"), (PrimaryWallDirection.Equals(PlayerForwardDirection) ? "true" : "false"));
 
 		if (bLookedAtPrimaryWall == false)
 		{
-			if (PrimaryWallDirection.Equals(PlayerForwardDirection))
+			const float WallAngleFromPlayer = FMath::RadiansToDegrees(acosf(FVector::DotProduct(PlayerForwardDirection, PrimaryWallDirection)));
+			if (WallAngleFromPlayer > 89)
 				bLookedAtPrimaryWall = true;
 		}
 		else
