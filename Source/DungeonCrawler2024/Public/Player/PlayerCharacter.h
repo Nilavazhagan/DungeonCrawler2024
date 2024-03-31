@@ -10,6 +10,7 @@
 #include "DungeonCrawler2024/DungeonCrawler2024GameMode.h"
 #include "DungeonCrawler2024/GridManager.h"
 #include "GameFramework/Character.h"
+#include "Sound/SoundCue.h"
 #include "PlayerCharacter.generated.h"
 
 UCLASS()
@@ -30,6 +31,10 @@ public:
 	// The Player's keyinventory component
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UKeysInventoryComponent* KeyInventory;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<USoundCue*> FootstepSounds;
+	
 
 protected:
 	// Called when the game starts or when spawned
@@ -96,6 +101,8 @@ private:
 	ADungeonCrawler2024GameMode* GameMode;
 	UPROPERTY()
 	AGridManager* GridManager;
+
+	void PlayFootstepSound();
 
 	// Gets the tile directly in front of the player
 	bool GetForwardTile(FGridTileStruct& Tile);

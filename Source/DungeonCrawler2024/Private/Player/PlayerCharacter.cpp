@@ -66,36 +66,42 @@ void APlayerCharacter::MoveForward()
 {
 	const bool Moved = GridManager->MoveActor(this, GetActorForwardVector());
 	TickIfTrue(Moved);
+	PlayFootstepSound();
 }
 
 void APlayerCharacter::MoveBackward()
 {
 	const bool Moved = GridManager->MoveActor(this, -1 * GetActorForwardVector());
 	TickIfTrue(Moved);
+	PlayFootstepSound();
 }
 
 void APlayerCharacter::MoveLeft()
 {
 	const bool Moved =GridManager->MoveActor(this, -1 * GetActorRightVector());
 	TickIfTrue(Moved);
+	PlayFootstepSound();
 }
 
 void APlayerCharacter::MoveRight()
 {
 	const bool Moved = GridManager->MoveActor(this, GetActorRightVector());
 	TickIfTrue(Moved);
+	PlayFootstepSound();
 }
 
 void APlayerCharacter::TurnRight()
 {
 	AddActorLocalRotation(FRotator(0, 90, 0));
 	TickIfTrue();
+	PlayFootstepSound();
 }
 
 void APlayerCharacter::TurnLeft()
 {
 	AddActorLocalRotation(FRotator(0, -90, 0));
 	TickIfTrue();
+	PlayFootstepSound();
 }
 
 // Upon pressing the interact key, triggers the interact interface on any actors
@@ -175,7 +181,9 @@ void APlayerCharacter::Attack()
 void APlayerCharacter::TickIfTrue(bool Check) const
 {
 	if (Check)
+	{
 		GameMode->OnPlayerTick.ExecuteIfBound();
+	}
 }
 
 void APlayerCharacter::Equip(AActor* Weapon) const
@@ -196,4 +204,17 @@ bool APlayerCharacter::GetForwardTile(FGridTileStruct& Tile)
 	{
 		return true;
 	}
+}
+
+// If sounds are in the footstep sounds array, play a random one
+void APlayerCharacter::PlayFootstepSound()
+{
+	if (FootstepSounds.Num() == 0)
+	{
+		return;
+	}
+
+	// Play a random footstep sound
+	int32 SoundIndex = FMath::RandRange(0, FootstepSounds.Num() - 1);
+	UGameplayStatics::PlaySound2D(GetWorld(), FootstepSounds[SoundIndex]);
 }
