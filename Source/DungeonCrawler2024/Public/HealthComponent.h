@@ -18,6 +18,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int InitialHealth;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int CurrentHealth;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int MaxHealth{ 10 };
 
 protected:
 	// Called when the game starts
@@ -25,8 +29,7 @@ protected:
 
 
 
-	UPROPERTY(VisibleInstanceOnly)
-	int CurrentHealth;
+
 
 public:
 
@@ -43,6 +46,5 @@ private:
 
 	const int Min_Health{ 0 };
 
-	UPROPERTY(EditAnywhere)
-	int MaxHealth{ 10 };
+
 };
