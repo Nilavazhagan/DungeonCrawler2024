@@ -35,6 +35,8 @@ void UPickupComponent::BeginPlay()
 void UPickupComponent::OnCollision(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& Hit)
 {
+	GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Blue, TEXT("UPickupComponent OnCollision Called!"));
+
 	// Check if the other actor is the player character.
 	const APlayerCharacter* playerChar = Cast<APlayerCharacter>(OtherActor);
 	if (playerChar == nullptr)

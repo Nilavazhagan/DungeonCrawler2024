@@ -24,13 +24,13 @@ protected:
 	bool bDestroyOnCollision = true;
 
 public:
-	UDELEGATE()
+	UDELEGATE(BlueprintCallable)
 	DECLARE_DYNAMIC_DELEGATE_OneParam(FOnPickupDelegate, const AActor*, Actor);
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 	FOnPickupDelegate OnPickup;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, NoClear)
 	UShapeComponent* Collider;
 
 private:
