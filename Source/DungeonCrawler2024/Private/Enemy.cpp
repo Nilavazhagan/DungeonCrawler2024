@@ -20,6 +20,7 @@ AEnemy::AEnemy()
 
 	DamageComponent = CreateDefaultSubobject<UDamageComponent>(TEXT("DamageComponent"));
 	DamageComponent->RegisterComponent();
+	DamageComponent->Damage = 1;
 
 	TileBlockingComponent = CreateDefaultSubobject<UTileBlockingComponent>(TEXT("TileBlockingComponent"));
 	TileBlockingComponent->RegisterComponent();

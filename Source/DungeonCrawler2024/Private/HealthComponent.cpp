@@ -31,8 +31,10 @@ void UHealthComponent::ReceiveDamage(int Damage)
 	CurrentHealth -= Damage;
 	OnDamaged.ExecuteIfBound();
 	if (CurrentHealth <= Min_Health)
+	{
 		OnDeath.ExecuteIfBound();
 		Die();
+	}
 }
 
 void UHealthComponent::Heal(int HealAmt)
