@@ -30,6 +30,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void Toggle();
 
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
+	void OnToggle();
 private:
 	
 	UPROPERTY()

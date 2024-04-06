@@ -15,7 +15,9 @@ enum class TriggerMode
 	Once,
 	LookAway,
 	Everytime,
-	OnceAndLookAway
+	OnceAndLookAway,
+	LookAt,
+	OnceAndLookAt
 };
 
 UCLASS()

@@ -20,7 +20,8 @@ void AHiddenWall::BeginPlay()
 	TileBlockingComponent->RegisterComponent();
 	if(bIsHidden == true)
 	{
-		RootComponent->SetVisibility(false, true);
+		const FVector CurrentLocation = GetActorLocation();
+		SetActorLocation(FVector(CurrentLocation.X, CurrentLocation.Y, -210));
 		TileBlockingComponent->bDoesBlockTile = false;
 	}
 }
@@ -34,7 +35,6 @@ void AHiddenWall::Tick(float DeltaTime)
 void AHiddenWall::Toggle()
 {
 	const bool bShouldHide = !bIsHidden;
-	RootComponent->SetVisibility(!bShouldHide, true);
 	TileBlockingComponent->bDoesBlockTile = !bShouldHide;
 	bIsHidden = bShouldHide;
 }

@@ -33,7 +33,12 @@ void AHiddenWallTrigger::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (bIsPlayerInsideTrigger && (TriggerMode == TriggerMode::LookAway || TriggerMode == TriggerMode::OnceAndLookAway))
+	if (bIsPlayerInsideTrigger && (
+		TriggerMode == TriggerMode::LookAway ||
+		TriggerMode == TriggerMode::OnceAndLookAway ||
+		TriggerMode == TriggerMode::LookAt ||
+		TriggerMode == TriggerMode::OnceAndLookAt
+		))
 	{
 		const FVector PlayerLocation = PlayerActor->GetActorLocation();
 		FVector PlayerForwardDirection = PlayerActor->GetActorForwardVector();
@@ -52,6 +57,12 @@ void AHiddenWallTrigger::Tick(float DeltaTime)
 		{
 			if (WallPlayerDotProduct > 0.5)
 			{
+				// For `LookAt` toggle the walls here (when looking at the primary wall)
+				if (TriggerMode == TriggerMode::LookAt || TriggerMode == TriggerMode::OnceAndLookAt)
+				{
+					ToggleConnectedWalls();
+					bIsFirstCollision = false;
+				}
 				bLookedAtPrimaryWall = true;
 			}
 		}
@@ -60,8 +71,12 @@ void AHiddenWallTrigger::Tick(float DeltaTime)
 			// If the dot product is less than 0, the player is looking more than 90 degrees away from the wall 
 			if (WallPlayerDotProduct <= 0.01 || WallPlayerDotProduct == -0.0)
 			{
-				ToggleConnectedWalls();
 				bLookedAtPrimaryWall = false;
+				// For `LookAt` the walls have already been toggled, so nothing needs to be done here
+				if (TriggerMode == TriggerMode::LookAt || TriggerMode == TriggerMode::OnceAndLookAt)
+					return;
+
+				ToggleConnectedWalls();
 				bIsFirstCollision = false;
 			}
 		}
@@ -71,7 +86,7 @@ void AHiddenWallTrigger::Tick(float DeltaTime)
 void AHiddenWallTrigger::ToggleConnectedWalls()
 {
 	for (AHiddenWall* Wall : ConnectedWalls)
-		Wall->Toggle();
+		Wall->OnToggle();
 }
 
 void AHiddenWallTrigger::OnCollisionEnter(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -93,9 +108,11 @@ void AHiddenWallTrigger::OnCollisionEnter(UPrimitiveComponent* OverlappedCompone
 		ToggleConnectedWalls();
 		break;
 	case TriggerMode::OnceAndLookAway:
+	case TriggerMode::OnceAndLookAt:
 		if (!bIsFirstCollision)
 			break;
 	case TriggerMode::LookAway:
+	case TriggerMode::LookAt:
 		bIsPlayerInsideTrigger = true;
 		break;
 	}
