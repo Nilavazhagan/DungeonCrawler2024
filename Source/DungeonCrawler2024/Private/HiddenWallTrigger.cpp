@@ -33,52 +33,49 @@ void AHiddenWallTrigger::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (bIsPlayerInsideTrigger && (
-		TriggerMode == TriggerMode::LookAway ||
-		TriggerMode == TriggerMode::OnceAndLookAway ||
-		TriggerMode == TriggerMode::LookAt ||
-		TriggerMode == TriggerMode::OnceAndLookAt
-		))
+	if (!bIsPlayerInsideTrigger)
+		return;
+	if (TriggerMode == TriggerMode::Once || TriggerMode == TriggerMode::Everytime)
+		return;
+	if (!bIsFirstCollision &&
+		(TriggerMode == TriggerMode::OnceAndLookAt || TriggerMode == TriggerMode::OnceAndLookAway))
+		return;
+
+	const FVector PlayerLocation = PlayerActor->GetActorLocation();
+	FVector PlayerForwardDirection = PlayerActor->GetActorForwardVector();
+	PlayerForwardDirection.Normalize();
+
+	const FVector PrimaryWallLocation = ConnectedWalls[0]->GetActorLocation();
+	const FVector PrimaryWallLocationAdjusted = FVector(PrimaryWallLocation.X, PrimaryWallLocation.Y, PlayerLocation.Z);
+	FVector PrimaryWallDirection = PrimaryWallLocationAdjusted - PlayerLocation;
+	PrimaryWallDirection.Normalize();
+
+	const float WallPlayerDotProduct = FVector::DotProduct(PlayerForwardDirection, PrimaryWallDirection);
+	UE_LOG(LogTemp, Log, TEXT("The dot product is %f"), WallPlayerDotProduct);
+
+	if (bLookedAtPrimaryWall == false)
 	{
-		const FVector PlayerLocation = PlayerActor->GetActorLocation();
-		FVector PlayerForwardDirection = PlayerActor->GetActorForwardVector();
-		PlayerForwardDirection.Normalize();
-
-		const FVector PrimaryWallLocation = ConnectedWalls[0]->GetActorLocation();
-		const FVector PrimaryWallLocationAdjusted = FVector(PrimaryWallLocation.X, PrimaryWallLocation.Y, PlayerLocation.Z);
-		FVector PrimaryWallDirection = PrimaryWallLocationAdjusted - PlayerLocation;
-		PrimaryWallDirection.Normalize();
-
-
-		float WallPlayerDotProduct = FVector::DotProduct(PlayerForwardDirection, PrimaryWallDirection);
-		UE_LOG(LogTemp, Warning, TEXT("The dot product is %f"), WallPlayerDotProduct);
-
-		if (bLookedAtPrimaryWall == false)
+		if (WallPlayerDotProduct > 0.5)
 		{
-			if (WallPlayerDotProduct > 0.5)
+			// For `LookAt` toggle the walls here (when looking at the primary wall)
+			if (TriggerMode == TriggerMode::LookAt || TriggerMode == TriggerMode::OnceAndLookAt)
 			{
-				// For `LookAt` toggle the walls here (when looking at the primary wall)
-				if (TriggerMode == TriggerMode::LookAt || TriggerMode == TriggerMode::OnceAndLookAt)
-				{
-					ToggleConnectedWalls();
-					bIsFirstCollision = false;
-				}
-				bLookedAtPrimaryWall = true;
-			}
-		}
-		else
-		{
-			// If the dot product is less than 0, the player is looking more than 90 degrees away from the wall 
-			if (WallPlayerDotProduct <= 0.01 || WallPlayerDotProduct == -0.0)
-			{
-				bLookedAtPrimaryWall = false;
-				// For `LookAt` the walls have already been toggled, so nothing needs to be done here
-				if (TriggerMode == TriggerMode::LookAt || TriggerMode == TriggerMode::OnceAndLookAt)
-					return;
-
 				ToggleConnectedWalls();
-				bIsFirstCollision = false;
 			}
+			bLookedAtPrimaryWall = true;
+		}
+	}
+	else
+	{
+		// If the dot product is less than 0, the player is looking more than 90 degrees away from the wall 
+		if (WallPlayerDotProduct <= 0.01 || WallPlayerDotProduct == -0.0)
+		{
+			bLookedAtPrimaryWall = false;
+			// For `LookAt` the walls have already been toggled, so nothing needs to be done here
+			if (TriggerMode == TriggerMode::LookAt || TriggerMode == TriggerMode::OnceAndLookAt)
+				return;
+
+			ToggleConnectedWalls();
 		}
 	}
 }
@@ -87,6 +84,7 @@ void AHiddenWallTrigger::ToggleConnectedWalls()
 {
 	for (AHiddenWall* Wall : ConnectedWalls)
 		Wall->OnToggle();
+	bIsFirstCollision = false;
 }
 
 void AHiddenWallTrigger::OnCollisionEnter(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -103,7 +101,6 @@ void AHiddenWallTrigger::OnCollisionEnter(UPrimitiveComponent* OverlappedCompone
 	case TriggerMode::Once:
 		if (!bIsFirstCollision)
 			break;
-		bIsFirstCollision = false;
 	case TriggerMode::Everytime:
 		ToggleConnectedWalls();
 		break;
