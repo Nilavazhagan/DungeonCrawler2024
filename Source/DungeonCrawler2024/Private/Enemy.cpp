@@ -42,8 +42,6 @@ void AEnemy::BeginPlay()
 	GridManager = GameMode->GridManager;
 	GridTileSize = GridManager->GridTileSize;
 
-	GameMode->OnPlayerTick.AddDynamic(this, &AEnemy::OnPlayerTick);
-
 	if (PatrolTargets.Num() > 0)
 		CurrentTarget = PatrolTargets[0];
 }
@@ -51,7 +49,6 @@ void AEnemy::BeginPlay()
 void AEnemy::EndPlay(EEndPlayReason::Type Reason)
 {
 	Super::EndPlay(Reason);
-	GameMode->OnPlayerTick.RemoveDynamic(this, &AEnemy::OnPlayerTick);
 }
 
 // Called every frame
@@ -59,6 +56,16 @@ void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void AEnemy::OnEnemyTick()
+{
+	UpdateTarget(); 
+
+	if (GetPlayerDistance() == 1)
+		AttackPlayer();
+	else
+		Move();
 }
 
 TArray<FGridTileStruct> AEnemy::GetAdjacentTiles()
@@ -77,8 +84,11 @@ TArray<FGridTileStruct> AEnemy::GetAdjacentTiles()
 void AEnemy::Move()
 {
 	if (CurrentTarget == nullptr)
+	{
+		ITickActorInterface::BroadcastTickComplete();
 		return;
-	
+	}
+
 	TArray<FGridTileStruct> AdjacentTiles = GetAdjacentTiles();
 
 	float MinDistance = TNumericLimits<float>::Max();
@@ -104,6 +114,7 @@ void AEnemy::Move()
 	// Because AdjacentTiles is full of copies, use the copy's position data to get a reference to the original from the GridManager.
 	FGridTileStruct& NextTileOriginal = GridManager->GetClosestTile(AdjacentTiles[NextTileIndex].Position);
 	GridManager->MoveActorTo(this, NextTileOriginal);
+	ITickActorInterface::BroadcastTickComplete();
 }
 
 void AEnemy::RotateTowards(const FVector& LookAt)
@@ -120,11 +131,7 @@ void AEnemy::RotateTowards(const FVector& LookAt)
 void AEnemy::AttackPlayer()
 {
 	RotateTowards(Player->GetActorLocation());
-
-	UHealthComponent* PlayerHealthComponent = Cast<UHealthComponent>(
-		Player->GetComponentByClass(UHealthComponent::StaticClass()));
-	check(PlayerHealthComponent != nullptr);
-	PlayerHealthComponent->ReceiveDamage(DamageComponent->Damage);
+	OnAttack(Player);
 }
 
 bool AEnemy::IsPlayerInRange()
@@ -191,14 +198,3 @@ void AEnemy::UpdateTarget()
 		CurrentTarget = PatrolTargets[NextTargetIndex];
 	}
 }
-
-void AEnemy::OnPlayerTick()
-{
-	UpdateTarget(); 
-
-	if (GetPlayerDistance() == 1)
-		AttackPlayer();
-	else
-		Move();
-}
-

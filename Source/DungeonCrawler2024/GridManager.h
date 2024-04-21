@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "TileBlockingComponent.h"
 #include "GameFramework/Actor.h"
 #include "GridManager.generated.h"
 
 
+class ITickActorInterface;
 // This represents each type of grid tile that can be spawned
 UENUM()
 enum class ETileTypes
@@ -103,7 +103,7 @@ public:
 	void RegisterActor(AActor* Actor);
 
 	UFUNCTION(BlueprintCallable)
-	void UnregisterActor(const AActor* Actor);
+	void UnregisterActor(AActor* Actor);
 
 	// Set a Tile's type in the grid
 	UFUNCTION()
@@ -123,6 +123,12 @@ public:
 	UFUNCTION()
 	bool IsTileBlocking(FGridTileStruct Tile);
 
+	UFUNCTION()
+	void OnGameActorTickComplete();
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bIsPlayerTurn;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -130,9 +136,20 @@ protected:
 	virtual void PostActorCreated() override;
 	// Called when the actor is placed or spawned
 	virtual void OnConstruction(const FTransform& Transform) override;
+	virtual void Tick(float DeltaSeconds) override;
 
 private:
 	TMap<ETileTypes, UInstancedStaticMeshComponent*> ISMMap;
 	TArray<ETileTypes> TileKeyArray;
 	TMap<FColor, ETileTypes> ColorToTileMap;
+
+
+	UPROPERTY()
+	TArray<AActor*> TickActors;
+
+	UPROPERTY()
+	int numWaitingForActors = 0;
+
+	UPROPERTY()
+	bool bIsFirstTick = true;
 };

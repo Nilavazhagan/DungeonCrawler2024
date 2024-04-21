@@ -3,18 +3,17 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "DamageComponent.h"
 #include "KeysInventoryComponent.h"
 #include "InputAction.h"
+#include "TickActorInterface.h"
 #include "DungeonCrawler2024/DungeonCrawler2024Character.h"
 #include "DungeonCrawler2024/DungeonCrawler2024GameMode.h"
 #include "DungeonCrawler2024/GridManager.h"
-#include "GameFramework/Character.h"
 #include "Sound/SoundCue.h"
 #include "PlayerCharacter.generated.h"
 
 UCLASS()
-class DUNGEONCRAWLER2024_API APlayerCharacter : public ACharacter
+class DUNGEONCRAWLER2024_API APlayerCharacter : public ACharacter, public ITickActorInterface
 {
 	GENERATED_BODY()
 
@@ -56,7 +55,8 @@ protected:
 
 	void Attack();
 
-	void TickIfTrue(bool Check = true) const;
+	UFUNCTION(BlueprintCallable)
+	void TickIfTrue(bool Check = true);
 
 public:
 	// Called every frame
@@ -95,12 +95,34 @@ public:
 	UFUNCTION()
 	void Equip(AActor* Weapon) const;
 
+	virtual void OnPlayerTick() override;
+
+	UFUNCTION(BlueprintCallable)
+	bool IsMyTurn();
+
+	virtual AGridManager* GetGridManager() override
+	{
+		return GridManager;
+	}
+	virtual void CallPlayerTickDelayed() override
+	{
+		GetWorldTimerManager().SetTimerForNextTick(this, &APlayerCharacter::OnPlayerTick);
+	}
+	virtual void CallEnemyTickDelayed() override
+	{
+		GetWorldTimerManager().SetTimerForNextTick(this, &APlayerCharacter::OnEnemyTick);
+	}
+
 private:
 
 	UPROPERTY()
 	ADungeonCrawler2024GameMode* GameMode;
 	UPROPERTY()
 	AGridManager* GridManager;
+	UPROPERTY()
+	bool bIsPlayerTurn;
+	UPROPERTY()
+	FOnTickComplete OnTickComplete;
 
 	void PlayFootstepSound();
 

@@ -21,7 +21,7 @@ protected:
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void DealDamageTo(AActor* Target);
+	void DealDamageTo(AActor* Target, AActor* Attacker);
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

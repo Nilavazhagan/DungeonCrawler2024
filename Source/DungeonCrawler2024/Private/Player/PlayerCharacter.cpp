@@ -64,6 +64,9 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 void APlayerCharacter::MoveForward()
 {
+	if (!IsMyTurn())
+		return;
+	
 	const bool Moved = GridManager->MoveActor(this, GetActorForwardVector());
 	TickIfTrue(Moved);
 	PlayFootstepSound();
@@ -71,6 +74,9 @@ void APlayerCharacter::MoveForward()
 
 void APlayerCharacter::MoveBackward()
 {
+	if (!IsMyTurn())
+		return;
+	
 	const bool Moved = GridManager->MoveActor(this, -1 * GetActorForwardVector());
 	TickIfTrue(Moved);
 	PlayFootstepSound();
@@ -78,6 +84,9 @@ void APlayerCharacter::MoveBackward()
 
 void APlayerCharacter::MoveLeft()
 {
+	if (!IsMyTurn())
+		return;
+	
 	const bool Moved =GridManager->MoveActor(this, -1 * GetActorRightVector());
 	TickIfTrue(Moved);
 	PlayFootstepSound();
@@ -85,6 +94,9 @@ void APlayerCharacter::MoveLeft()
 
 void APlayerCharacter::MoveRight()
 {
+	if (!IsMyTurn())
+		return;
+	
 	const bool Moved = GridManager->MoveActor(this, GetActorRightVector());
 	TickIfTrue(Moved);
 	PlayFootstepSound();
@@ -92,6 +104,9 @@ void APlayerCharacter::MoveRight()
 
 void APlayerCharacter::TurnRight()
 {
+	if (!IsMyTurn())
+		return;
+	
 	AddActorLocalRotation(FRotator(0, 90, 0));
 	TickIfTrue();
 	PlayFootstepSound();
@@ -99,6 +114,9 @@ void APlayerCharacter::TurnRight()
 
 void APlayerCharacter::TurnLeft()
 {
+	if (!IsMyTurn())
+		return;
+	
 	AddActorLocalRotation(FRotator(0, -90, 0));
 	TickIfTrue();
 	PlayFootstepSound();
@@ -108,6 +126,9 @@ void APlayerCharacter::TurnLeft()
 // occupying the tile directly in front.
 void APlayerCharacter::Interact()
 {
+	if (!IsMyTurn())
+		return;
+	
 	UE_LOG(LogTemp, Display, TEXT("Interact input received!"));
 
 	// Getting the tile data to check
@@ -126,7 +147,6 @@ void APlayerCharacter::Interact()
 		if (OccupyingActor->Implements<UInteract>())
 		{
 			IInteract::Execute_OnInteract(OccupyingActor, this);
-			TickIfTrue();
 			break;
 		}
 	}
@@ -134,6 +154,9 @@ void APlayerCharacter::Interact()
 
 void APlayerCharacter::Attack()
 {
+	if (!IsMyTurn())
+		return;
+	
 	UChildActorComponent* ActiveWeaponHolder;
 	if (!EquippedWeaponHolder->GetChildActor())
 	{
@@ -170,7 +193,6 @@ void APlayerCharacter::Attack()
 	if (ActiveWeaponHolder->GetChildActor()->Implements<UAttack>())
 	{
 		IAttack::Execute_OnAttack(ActiveWeaponHolder->GetChildActor(), this, Target);
-		TickIfTrue();
 	}
 	else
 	{
@@ -178,15 +200,28 @@ void APlayerCharacter::Attack()
 	}
 }
 
-void APlayerCharacter::TickIfTrue(bool Check) const
+void APlayerCharacter::TickIfTrue(bool Check)
 {
 	if (Check)
-		GameMode->OnPlayerTick.Broadcast();
+	{
+		ITickActorInterface::BroadcastTickComplete();
+		bIsPlayerTurn = false;
+	}
 }
 
 void APlayerCharacter::Equip(AActor* Weapon) const
 {
 	EquippedWeaponHolder->SetChildActorClass(Weapon->GetClass());
+}
+
+void APlayerCharacter::OnPlayerTick()
+{
+	bIsPlayerTurn = true;
+}
+
+bool APlayerCharacter::IsMyTurn()
+{
+	return bIsPlayerTurn;
 }
 
 // Returns a reference to the tile directly in front of the player, returns false if forward tile doesn't exist

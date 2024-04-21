@@ -24,7 +24,7 @@ public:
 	int MaxHealth{ 10 };
 
 	UDELEGATE(BlueprintCallable)
-	DECLARE_DYNAMIC_DELEGATE(FDamageReceivedDelegate);
+	DECLARE_DYNAMIC_DELEGATE_TwoParams(FDamageReceivedDelegate, int, HealthAfterDamage, AActor*, Attacker);
 	UPROPERTY(BlueprintReadWrite)
 	FDamageReceivedDelegate OnDamaged;
 
@@ -32,7 +32,6 @@ public:
 	DECLARE_DYNAMIC_DELEGATE(FOnDeathDelegate);
 	UPROPERTY(BlueprintReadWrite)
 	FOnDeathDelegate OnDeath;
-
 
 protected:
 	// Called when the game starts
@@ -45,14 +44,14 @@ protected:
 public:
 
 	UFUNCTION(BlueprintCallable)
-	void ReceiveDamage(int damage);
+	void ReceiveDamage(int damage, AActor* Attacker);
 
 	UFUNCTION(BlueprintCallable)
 	void Heal(int healAmt);
 
 private:
 	
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void Die();
 
 	const int Min_Health{ 0 };

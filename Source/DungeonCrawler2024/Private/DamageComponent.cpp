@@ -16,10 +16,13 @@ UDamageComponent::UDamageComponent()
 }
 
 // Handles dealing damage to a target actor
-void UDamageComponent::DealDamageTo(AActor* Target)
+void UDamageComponent::DealDamageTo(AActor* Target, AActor* Attacker)
 {
+	if (!IsValid(Target) || !IsValid(Attacker))
+		return;
+	
 	UHealthComponent* TargetHealth = Target->GetComponentByClass<UHealthComponent>();
-	if (!TargetHealth) return;
-	TargetHealth->ReceiveDamage(Damage);
+	if (!TargetHealth) return; 
+	TargetHealth->ReceiveDamage(Damage, Attacker);
 }
 

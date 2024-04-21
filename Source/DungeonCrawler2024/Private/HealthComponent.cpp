@@ -3,6 +3,8 @@
 
 #include "HealthComponent.h"
 
+#include "Enemy.h"
+
 
 // Sets default values for this component's properties
 UHealthComponent::UHealthComponent()
@@ -25,13 +27,14 @@ void UHealthComponent::BeginPlay()
 	CurrentHealth = InitialHealth;
 }
 
-void UHealthComponent::ReceiveDamage(int Damage)
+void UHealthComponent::ReceiveDamage(int Damage, AActor* Attacker)
 {
 	CurrentHealth -= Damage;
-	OnDamaged.ExecuteIfBound();
-	if (CurrentHealth <= Min_Health)
+	bool DelegateExecuted = OnDamaged.ExecuteIfBound(CurrentHealth, Attacker);
+	if (!DelegateExecuted && CurrentHealth <= 0)
 	{
-		OnDeath.ExecuteIfBound();
+		// Fallback - If OnDamaged is not bound - Die immediately
+		// If it is bound - Die needs to be called by Owner
 		Die();
 	}
 }

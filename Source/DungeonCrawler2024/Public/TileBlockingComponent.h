@@ -20,7 +20,7 @@ public:
 	bool bDoesBlockTile;
 
 	UDELEGATE()
-	DECLARE_DYNAMIC_DELEGATE_OneParam(FOnDestroy, const AActor*, Actor);
+	DECLARE_DYNAMIC_DELEGATE_OneParam(FOnDestroy, AActor*, Actor);
 
 	UPROPERTY()
 	FOnDestroy OnDestroy;

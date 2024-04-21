@@ -2,6 +2,8 @@
 
 
 #include "GridManager.h"
+
+#include "TickActorInterface.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Components/SceneComponent.h"
 #include "TileBlockingComponent.h"
@@ -9,12 +11,11 @@
 // Sets default values and other construction things
 AGridManager::AGridManager()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	// Setting up the root scene component
 	USceneComponent* RootSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 	RootComponent = RootSceneComponent;
-
 
 	// Initializing Grid Sizes
 	GridWidth = 100;
@@ -53,7 +54,7 @@ AGridManager::AGridManager()
 void AGridManager::OnConstruction(const FTransform &Transform)
 {
 	Super::OnConstruction(Transform);
-	
+	bIsFirstTick = true;
 	// Clear all instances on all Instanced Static Mesh Components for a clean slate
 	for (int i = 0; i < TileKeyArray.Num(); ++i)
 	{
@@ -130,6 +131,15 @@ void AGridManager::OnConstruction(const FTransform &Transform)
 	}
 }
 
+void AGridManager::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	if (bIsFirstTick)
+		OnGameActorTickComplete();
+	bIsFirstTick = false;
+}
+
 // Called when the actor is spawned into the world
 void AGridManager::PostActorCreated()
 {
@@ -149,6 +159,9 @@ void AGridManager::PostActorCreated()
 void AGridManager::BeginPlay()
 {
 	Super::BeginPlay();
+	numWaitingForActors = 0;
+	bIsPlayerTurn = true;
+	TickActors.Empty();
 }
 
 
@@ -321,9 +334,15 @@ void AGridManager::RegisterActor(AActor* Actor)
 	UTileBlockingComponent* TileBlockingComponent = Cast<UTileBlockingComponent>(
 		Actor->GetComponentByClass(UTileBlockingComponent::StaticClass()));
 	TileBlockingComponent->OnDestroy.BindDynamic(this, &AGridManager::UnregisterActor);
+
+	const ITickActorInterface* TickActor = Cast<ITickActorInterface>(Actor);
+	if (TickActor == nullptr)
+		return;
+
+	TickActors.Add(Actor);
 }
 
-void AGridManager::UnregisterActor(const AActor* Actor)
+void AGridManager::UnregisterActor(AActor* Actor)
 {
 	for (FGridTileStruct& Tile : Grid)
 	{
@@ -333,6 +352,12 @@ void AGridManager::UnregisterActor(const AActor* Actor)
 			UTileBlockingComponent* TileBlockingComponent = Cast<UTileBlockingComponent>(
 				Actor->GetComponentByClass(UTileBlockingComponent::StaticClass()));
 			TileBlockingComponent->OnDestroy.Unbind();
+
+			const ITickActorInterface* TickActor = Cast<ITickActorInterface>(Actor);
+			if (TickActor == nullptr)
+				return;
+
+			TickActors.Remove(Actor);
 			break;
 		}
 	}
@@ -344,4 +369,31 @@ void AGridManager::SetTileType(ETileTypes Type, int X, int Y)
 	checkf(X < GridWidth, TEXT("Set Tile Type had been passed an X value greater than grid width."));
 	checkf(Y < GridHeight, TEXT("Set Tile Type had been passed a Y value greater than grid height."));
 	Grid[X + (Y * GridWidth)].TileType = Type;
+}
+
+void AGridManager::OnGameActorTickComplete()
+{
+	if (numWaitingForActors > 0 && --numWaitingForActors != 0)
+		return;
+
+	for(int i = 0, count = TickActors.Num(); i < count; i++)
+	{
+		if (!TickActors.IsValidIndex(i))
+			continue;
+		
+		AActor* Actor = TickActors[i];
+		if (!IsValid(Actor))
+			continue;
+
+		ITickActorInterface* TickActor = Cast<ITickActorInterface>(Actor);
+		if (TickActor == nullptr)
+			continue;
+		
+		if (bIsPlayerTurn)
+			TickActor->CallPlayerTickDelayed();
+		else
+			TickActor->CallEnemyTickDelayed();
+		numWaitingForActors++;
+	}
+	bIsPlayerTurn = !bIsPlayerTurn;
 }

@@ -3,17 +3,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
 #include "HealthComponent.h"
 #include "DamageComponent.h"
+#include "TickActorInterface.h"
 #include "TileBlockingComponent.h"
 #include "DungeonCrawler2024/DungeonCrawler2024GameMode.h"
 #include "DungeonCrawler2024/GridManager.h"
+#include "GameFramework/Character.h"
 #include "Enemy.generated.h"
 
 
 UCLASS()
-class DUNGEONCRAWLER2024_API AEnemy : public ACharacter
+class DUNGEONCRAWLER2024_API AEnemy : public ACharacter, public ITickActorInterface
 {
 	GENERATED_BODY()
 
@@ -23,7 +24,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UHealthComponent* Health;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UDamageComponent* DamageComponent;
 	UPROPERTY(EditAnywhere)
 	UTileBlockingComponent* TileBlockingComponent;
@@ -49,6 +50,26 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UFUNCTION(BlueprintImplementableEvent)	
+	void OnAttack(AActor* Target);
+
+	virtual void OnEnemyTick() override;
+
+	virtual AGridManager* GetGridManager() override
+	{
+		return GridManager;
+	}
+	virtual void CallPlayerTickDelayed() override
+	{
+		GetWorldTimerManager().SetTimerForNextTick(this, &AEnemy::OnPlayerTick);
+	}
+	virtual void CallEnemyTickDelayed() override
+	{
+		GetWorldTimerManager().SetTimerForNextTick(this, &AEnemy::OnEnemyTick);
+	}
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
+	void OnDamageReceived(int HealthAfterDamage, AActor* Attacker);
+
 private:
 
 	UPROPERTY()
@@ -62,6 +83,9 @@ private:
 
 	UPROPERTY()
 	AActor* CurrentTarget;
+
+	UPROPERTY()
+	FOnTickComplete OnTickComplete;
 
 	UFUNCTION()
 	TArray<FGridTileStruct> GetAdjacentTiles();
@@ -86,8 +110,4 @@ private:
 	
 	UFUNCTION()
 	void UpdateTarget();
-	
-	UFUNCTION()
-	void OnPlayerTick();
-
 };
