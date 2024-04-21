@@ -98,6 +98,9 @@ public:
 	virtual void OnPlayerTick() override;
 
 	UFUNCTION(BlueprintCallable)
+	void SetShouldBlockInput(bool ShouldBlockInput);
+
+	UFUNCTION(BlueprintCallable)
 	bool ShouldBlockInput();
 
 	virtual AGridManager* GetGridManager() override

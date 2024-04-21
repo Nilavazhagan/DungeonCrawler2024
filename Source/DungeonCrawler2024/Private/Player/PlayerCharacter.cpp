@@ -220,7 +220,12 @@ void APlayerCharacter::Equip(AActor* Weapon) const
 
 void APlayerCharacter::OnPlayerTick()
 {
-	bShouldBlockInput = false;
+	SetShouldBlockInput(false);
+}
+
+void APlayerCharacter::SetShouldBlockInput(const bool ShouldBlockInput)
+{
+	bShouldBlockInput = ShouldBlockInput;
 }
 
 bool APlayerCharacter::ShouldBlockInput()
