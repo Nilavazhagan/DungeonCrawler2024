@@ -98,7 +98,7 @@ public:
 	virtual void OnPlayerTick() override;
 
 	UFUNCTION(BlueprintCallable)
-	bool IsMyTurn();
+	bool ShouldBlockInput();
 
 	virtual AGridManager* GetGridManager() override
 	{
@@ -120,7 +120,7 @@ private:
 	UPROPERTY()
 	AGridManager* GridManager;
 	UPROPERTY()
-	bool bIsPlayerTurn;
+	bool bShouldBlockInput;
 	UPROPERTY()
 	FOnTickComplete OnTickComplete;
 

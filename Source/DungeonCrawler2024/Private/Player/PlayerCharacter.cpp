@@ -64,7 +64,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 void APlayerCharacter::MoveForward()
 {
-	if (!IsMyTurn())
+	if (ShouldBlockInput())
 		return;
 	
 	const bool Moved = GridManager->MoveActor(this, GetActorForwardVector());
@@ -74,7 +74,7 @@ void APlayerCharacter::MoveForward()
 
 void APlayerCharacter::MoveBackward()
 {
-	if (!IsMyTurn())
+	if (ShouldBlockInput())
 		return;
 	
 	const bool Moved = GridManager->MoveActor(this, -1 * GetActorForwardVector());
@@ -84,7 +84,7 @@ void APlayerCharacter::MoveBackward()
 
 void APlayerCharacter::MoveLeft()
 {
-	if (!IsMyTurn())
+	if (ShouldBlockInput())
 		return;
 	
 	const bool Moved =GridManager->MoveActor(this, -1 * GetActorRightVector());
@@ -94,7 +94,7 @@ void APlayerCharacter::MoveLeft()
 
 void APlayerCharacter::MoveRight()
 {
-	if (!IsMyTurn())
+	if (ShouldBlockInput())
 		return;
 	
 	const bool Moved = GridManager->MoveActor(this, GetActorRightVector());
@@ -104,7 +104,7 @@ void APlayerCharacter::MoveRight()
 
 void APlayerCharacter::TurnRight()
 {
-	if (!IsMyTurn())
+	if (ShouldBlockInput())
 		return;
 	
 	AddActorLocalRotation(FRotator(0, 90, 0));
@@ -114,7 +114,7 @@ void APlayerCharacter::TurnRight()
 
 void APlayerCharacter::TurnLeft()
 {
-	if (!IsMyTurn())
+	if (ShouldBlockInput())
 		return;
 	
 	AddActorLocalRotation(FRotator(0, -90, 0));
@@ -126,7 +126,7 @@ void APlayerCharacter::TurnLeft()
 // occupying the tile directly in front.
 void APlayerCharacter::Interact()
 {
-	if (!IsMyTurn())
+	if (ShouldBlockInput())
 		return;
 	
 	UE_LOG(LogTemp, Display, TEXT("Interact input received!"));
@@ -147,6 +147,8 @@ void APlayerCharacter::Interact()
 		if (OccupyingActor->Implements<UInteract>())
 		{
 			IInteract::Execute_OnInteract(OccupyingActor, this);
+			// Block input at the start of animation to prevent multiple actions
+			bShouldBlockInput = true;
 			break;
 		}
 	}
@@ -154,7 +156,7 @@ void APlayerCharacter::Interact()
 
 void APlayerCharacter::Attack()
 {
-	if (!IsMyTurn())
+	if (ShouldBlockInput())
 		return;
 	
 	UChildActorComponent* ActiveWeaponHolder;
@@ -193,6 +195,8 @@ void APlayerCharacter::Attack()
 	if (ActiveWeaponHolder->GetChildActor()->Implements<UAttack>())
 	{
 		IAttack::Execute_OnAttack(ActiveWeaponHolder->GetChildActor(), this, Target);
+		// Block input at the start of animation to prevent multiple actions
+		bShouldBlockInput = true;
 	}
 	else
 	{
@@ -205,7 +209,7 @@ void APlayerCharacter::TickIfTrue(bool Check)
 	if (Check)
 	{
 		ITickActorInterface::BroadcastTickComplete();
-		bIsPlayerTurn = false;
+		bShouldBlockInput = true;
 	}
 }
 
@@ -216,12 +220,12 @@ void APlayerCharacter::Equip(AActor* Weapon) const
 
 void APlayerCharacter::OnPlayerTick()
 {
-	bIsPlayerTurn = true;
+	bShouldBlockInput = false;
 }
 
-bool APlayerCharacter::IsMyTurn()
+bool APlayerCharacter::ShouldBlockInput()
 {
-	return bIsPlayerTurn;
+	return bShouldBlockInput;
 }
 
 // Returns a reference to the tile directly in front of the player, returns false if forward tile doesn't exist
