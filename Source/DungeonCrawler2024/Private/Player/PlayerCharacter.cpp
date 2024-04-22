@@ -238,7 +238,7 @@ FString APlayerCharacter::GetActiveWeaponName()
 	if (!EquippedWeaponHolder->GetChildActor())
 		return TorchHolder->GetChildActor()->GetName();
 
-	return EquippedWeaponHolder->GetChildActor()->();
+	return EquippedWeaponHolder->GetChildActor()->GetName();
 }
 
 // Returns a reference to the tile directly in front of the player, returns false if forward tile doesn't exist
