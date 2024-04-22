@@ -103,6 +103,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool ShouldBlockInput();
 
+	UFUNCTION(BlueprintCallable)
+	FString GetActiveWeaponName();
+
 	virtual AGridManager* GetGridManager() override
 	{
 		return GridManager;

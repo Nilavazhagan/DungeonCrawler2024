@@ -233,6 +233,14 @@ bool APlayerCharacter::ShouldBlockInput()
 	return bShouldBlockInput;
 }
 
+FString APlayerCharacter::GetActiveWeaponName()
+{
+	if (!EquippedWeaponHolder->GetChildActor())
+		return TorchHolder->GetChildActor()->GetName();
+
+	return EquippedWeaponHolder->GetChildActor()->();
+}
+
 // Returns a reference to the tile directly in front of the player, returns false if forward tile doesn't exist
 bool APlayerCharacter::GetForwardTile(FGridTileStruct& Tile)
 {
