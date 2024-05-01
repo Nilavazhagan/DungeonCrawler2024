@@ -97,7 +97,7 @@ void AEnemy::Move()
 	{
 		FGridTileStruct Tile = AdjacentTiles[i];
 		if (GridManager->IsTileBlocking(Tile))
-			break;
+			continue;
 
 		const float DistanceToTarget = FVector::Dist(Tile.Position, CurrentTarget->GetActorLocation());
 		if(DistanceToTarget < MinDistance)
